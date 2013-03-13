@@ -87,7 +87,7 @@ namespace WorldDomination.Raven.Client
                                                         ? "No Error message .. err??"
                                                         : serverError.Error);
 
-                Debug.WriteLine(errorMessage);
+                Trace.WriteLine(errorMessage);
             }
 
             throw new InvalidOperationException("DocumentStore has some errors. Dast is nict gut.");
@@ -98,7 +98,7 @@ namespace WorldDomination.Raven.Client
             while (documentStore.DatabaseCommands.GetStatistics().StaleIndexes.Length != 0)
             {
                 Thread.Sleep(50);
-                Debug.WriteLine("Waiting for indexes to stop being stale ...");
+                Trace.WriteLine("Waiting for indexes to stop being stale ...");
             }
         }
 
@@ -124,7 +124,7 @@ namespace WorldDomination.Raven.Client
                 }
 
                 // Store each collection of fake seeded data.
-                Debug.WriteLine("Seeding Data :-");
+                Trace.WriteLine("Seeding Data :-");
                 foreach (IEnumerable collection in seedData)
                 {
                     int count = 0;
@@ -139,9 +139,9 @@ namespace WorldDomination.Raven.Client
                         }
                         documentSession.Store(entity);
                     }
-                    Debug.WriteLine("   --- {0} {1}", count, entityName);
+                    Trace.WriteLine(string.Format("   --- {0} {1}", count, entityName));
                 }
-                Debug.WriteLine("   Done!");
+                Trace.WriteLine("   Done!");
 
                 // Commit this transaction.
                 documentSession.SaveChanges();
