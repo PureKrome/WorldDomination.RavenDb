@@ -46,6 +46,9 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\Shared Assembly Info\SharedAssemblyInfo.cs">
+      <Link>Properties\SharedAssemblyInfo.cs</Link>
+    </Compile>
     <Compile Include="DocumentStoreExtensions.cs" />
     <Compile Include="Listeners\NoStaleQueriesListener.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
