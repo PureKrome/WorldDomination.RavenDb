@@ -31,6 +31,7 @@ namespace WorldDomination.Raven.Client
             // Index initialisation.
             if (indexesToExecute != null)
             {
+                Trace.WriteLine("Executing indexes that have been manually provided ...");
                 Type[] indexes = (from type in indexesToExecute
                                   where typeof(AbstractIndexCreationTask).IsAssignableFrom(type)
                                   select type).ToArray();
@@ -40,10 +41,17 @@ namespace WorldDomination.Raven.Client
                 }
 
                 IndexCreation.CreateIndexes(new CompositionContainer(new TypeCatalog(indexes)), documentStore);
+                Trace.WriteLine("    Done!");
             }
             else if (assemblyToScanForIndexes != null)
             {
+                Trace.WriteLine("Scanning assemblies for indexes that might exist within them ...");
                 IndexCreation.CreateIndexes(assemblyToScanForIndexes.Assembly, documentStore);
+                Trace.WriteLine("    Done!");
+            }
+            else
+            {
+                Trace.WriteLine("!!WARNING!! : No manual indexes where provided and not asked to scan any assemblies for indexes.");
             }
 
             // Create our Seed Data (if provided).
