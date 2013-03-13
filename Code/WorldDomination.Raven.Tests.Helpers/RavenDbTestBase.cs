@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Raven.Client;
+using Raven.Client.Document;
 using Raven.Client.Embedded;
 using WorldDomination.Raven.Client;
 using WorldDomination.Raven.Client.Listeners;
@@ -54,10 +55,14 @@ namespace WorldDomination.Raven.Tests.Helpers
                     return _documentStore;
                 }
 
-                Trace.WriteLine("Creating a new Embedded DocumentStore.");
+                Trace.WriteLine("Creating a new Embedded DocumentStore : In Ram and ConsistencyOptions.QueryYourWrites.");
                 var documentStore = new EmbeddableDocumentStore
                                     {
-                                        RunInMemory = true
+                                        RunInMemory = true,
+                                        Conventions = new DocumentConvention
+                                        {
+                                            DefaultQueryingConsistency = ConsistencyOptions.QueryYourWrites
+                                        } 
                                     };
 
                 Trace.WriteLine("Initializing data with Defaults :-");
