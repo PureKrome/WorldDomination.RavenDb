@@ -16,6 +16,7 @@ namespace WorldDomination.Raven.Tests.Helpers
         private IList<IEnumerable> _dataToBeSeeded;
         private IDictionary<string, IDocumentSession> _documentSessions;
         private IDocumentStore _documentStore;
+        private string _documentStoreUrl;
         private IList<Type> _indexesToExecute;
 
         /// <summary>
@@ -29,7 +30,15 @@ namespace WorldDomination.Raven.Tests.Helpers
                                 " index(es) have been requested to be executed (indexes to be indexed).");
                 return _indexesToExecute;
             }
-            set { _indexesToExecute = value; }
+            set
+            {
+                if (_documentStore != null)
+                {
+                    throw new InvalidOperationException(
+                        "The DocumentStore has already been created and Initialized. As such, changes to the Index list will not be used. Therefore, set this collection BEFORE your first call to a DocumentSession (which in effect creates the DocumentStore if it has been created).");
+                }
+                _indexesToExecute = value;
+            }
         }
 
         /// <summary>
@@ -43,7 +52,36 @@ namespace WorldDomination.Raven.Tests.Helpers
                                 " collection(s) of objects have been requested to be seeded (aka. Stored) in the database.");
                 return _dataToBeSeeded;
             }
-            set { _dataToBeSeeded = value; }
+            set
+            {
+                if (_documentStore != null)
+                {
+                    throw new InvalidOperationException("The DocumentStore has already been created and Initialized. As such, changes to the Seed data list will not be used. Therefore, set this collection BEFORE your first call to a DocumentSession (which in effect creates the DocumentStore if it has been created).");
+                }
+
+                _dataToBeSeeded = value;
+            }
+        }
+
+        /// <summary>
+        ///     Optional: Url of another document store to use in the test scenario.
+        /// </summary>
+        /// <remarks>This is a vary rare case of debugging. Generally, you do not set the value of this property and just use the embedded DocumentStore for in memory tests. Sometimes, you might want to see what data has actually been stored because there's something going wrong and you can't seem to programmatically debug the issue. Therefore, you can use a normal DocumentStore instance.</remarks>
+        protected string DocumentStoreUrl
+        {
+            get
+            {
+                return _documentStoreUrl;
+            }
+            set
+            {
+                if (_documentStore != null)
+                {
+                    throw new InvalidOperationException("The DocumentStore has already been created and Initialized. As such, changes to the DocumentStore Url will not be used. Therefore, set this value BEFORE your first call to a DocumentSession (which in effect creates the DocumentStore pointing to your desired location).");
+                }
+
+                _documentStoreUrl = value;
+            }
         }
 
         private IDocumentStore DocumentStore
@@ -55,22 +93,40 @@ namespace WorldDomination.Raven.Tests.Helpers
                     return _documentStore;
                 }
 
-                Trace.WriteLine("Creating a new Embedded DocumentStore : In Ram and ConsistencyOptions.QueryYourWrites.");
-                var documentStore = new EmbeddableDocumentStore
+                DocumentStore documentStore;
+
+                if (string.IsNullOrEmpty(DocumentStoreUrl))
+                {
+                    Trace.WriteLine("Creating a new Embedded DocumentStore in **RAM**.");
+                    documentStore = new EmbeddableDocumentStore
                                     {
                                         RunInMemory = true,
-                                        Conventions = new DocumentConvention
-                                        {
-                                            DefaultQueryingConsistency = ConsistencyOptions.QueryYourWrites
-                                        } 
                                     };
+                }
+                else
+                {
+                    Trace.WriteLine("The DocumentStore Url [" + DocumentStoreUrl + "] was provided. Creating a new (normal) DocumentStore with a Tenant named [UnitTests].");
+                    documentStore = new DocumentStore
+                                    {
+                                        Url = DocumentStoreUrl,
+                                        DefaultDatabase = "UnitTests"
+                                    };
+                }
+
+                Trace.WriteLine("Setting DocumentStore Conventions: ConsistencyOptions.QueryYourWrites.");
+                documentStore.Conventions = new DocumentConvention
+                                            {
+                                                DefaultQueryingConsistency =
+                                                    ConsistencyOptions.QueryYourWrites
+                                            };
 
                 Trace.WriteLine("Initializing data with Defaults :-");
                 documentStore.InitializeWithDefaults(DataToBeSeeded, IndexesToExecute);
                 Trace.WriteLine("   Done!");
 
                 // Force query's to wait for index's to catch up. Unit Testing only :P
-                Trace.WriteLine("Forcing queries to always wait until they are not stale. aka. It's like => WaitForNonStaleResultsAsOfLastWrite.");
+                Trace.WriteLine(
+                    "Forcing queries to always wait until they are not stale. aka. It's like => WaitForNonStaleResultsAsOfLastWrite.");
                 documentStore.RegisterListener(new NoStaleQueriesListener());
 
                 Trace.WriteLine("** Finished initializing the Document Store.");

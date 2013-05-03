@@ -108,6 +108,47 @@ namespace WorldDomination.Raven.Client.Tests
                 Assert.Equal(user.Id, existingUser.Id);
                 Assert.Equal(user.Name, existingUser.Name);
             }
+
+            [Fact]
+            public void GivenSomeIndexToExecuteAfterTheDocumentStoreWasCreated_InitializeWithDefaults_ThrowsAnException()
+            {
+                // Arrange.
+                var documentSession = DocumentSession;
+
+                // Act and Assert.
+                var result = Assert.Throws<InvalidOperationException>(() =>
+                                                                      IndexesToExecute =
+                                                                      new List<Type>{typeof (Users_Search)}); 
+                Assert.NotNull(result);
+                Assert.Equal("The DocumentStore has already been created and Initialized. As such, changes to the Index list will not be used. Therefore, set this collection BEFORE your first call to a DocumentSession (which in effect creates the DocumentStore if it has been created).", result.Message);
+            }
+
+            [Fact]
+            public void GivenSomeSeedDataAfterTheDocumentStoreWasCreated_InitializeWithDefaults_ThrowsAnException()
+            {
+                // Arrange.
+                var documentSession = DocumentSession;
+
+                // Act and Assert.
+                var result = Assert.Throws<InvalidOperationException>(() =>
+                                                                      DataToBeSeeded =
+                                                                      new List<IEnumerable> {User.CreateFakeData()});
+                Assert.NotNull(result);
+                Assert.Equal("The DocumentStore has already been created and Initialized. As such, changes to the Seed data list will not be used. Therefore, set this collection BEFORE your first call to a DocumentSession (which in effect creates the DocumentStore if it has been created).", result.Message);
+            }
+
+            [Fact]
+            public void GivenDocumentStoreUrlAfterTheDocumentStoreWasCreated_InitializeWithDefaults_ThrowsAnException()
+            {
+                // Arrange.
+                var documentSession = DocumentSession;
+
+                // Act and Assert.
+                var result = Assert.Throws<InvalidOperationException>(() =>
+                                                                      DocumentStoreUrl = "whatever");
+                Assert.NotNull(result);
+                Assert.Equal("The DocumentStore has already been created and Initialized. As such, changes to the DocumentStore Url will not be used. Therefore, set this value BEFORE your first call to a DocumentSession (which in effect creates the DocumentStore pointing to your desired location).", result.Message);
+            }
         }
     }
 
