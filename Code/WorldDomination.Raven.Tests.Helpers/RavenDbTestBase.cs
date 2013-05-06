@@ -26,8 +26,8 @@ namespace WorldDomination.Raven.Tests.Helpers
         {
             get
             {
-                Trace.WriteLine("* " + (_indexesToExecute == null ? 0 : _indexesToExecute.Count) +
-                                " index(es) have been requested to be executed (indexes to be indexed).");
+                Trace.TraceInformation("* " + (_indexesToExecute == null ? 0 : _indexesToExecute.Count) +
+                                       " index(es) have been requested to be executed (indexes to be indexed).");
                 return _indexesToExecute;
             }
             set
@@ -97,7 +97,7 @@ namespace WorldDomination.Raven.Tests.Helpers
 
                 if (string.IsNullOrEmpty(DocumentStoreUrl))
                 {
-                    Trace.WriteLine("Creating a new Embedded DocumentStore in **RAM**.");
+                    Trace.TraceInformation("Creating a new Embedded DocumentStore in **RAM**.");
                     documentStore = new EmbeddableDocumentStore
                                     {
                                         RunInMemory = true,
@@ -105,7 +105,7 @@ namespace WorldDomination.Raven.Tests.Helpers
                 }
                 else
                 {
-                    Trace.WriteLine("The DocumentStore Url [" + DocumentStoreUrl + "] was provided. Creating a new (normal) DocumentStore with a Tenant named [UnitTests].");
+                    Trace.TraceInformation("The DocumentStore Url [" + DocumentStoreUrl + "] was provided. Creating a new (normal) DocumentStore with a Tenant named [UnitTests].");
                     documentStore = new DocumentStore
                                     {
                                         Url = DocumentStoreUrl,
@@ -113,27 +113,27 @@ namespace WorldDomination.Raven.Tests.Helpers
                                     };
                 }
 
-                Trace.WriteLine("Setting DocumentStore Conventions: ConsistencyOptions.QueryYourWrites.");
+                Trace.TraceInformation("Setting DocumentStore Conventions: ConsistencyOptions.QueryYourWrites.");
                 documentStore.Conventions = new DocumentConvention
                                             {
                                                 DefaultQueryingConsistency =
                                                     ConsistencyOptions.QueryYourWrites
                                             };
 
-                Trace.WriteLine("Initializing data with Defaults :-");
+                Trace.TraceInformation("Initializing data with Defaults :-");
                 documentStore.InitializeWithDefaults(DataToBeSeeded, IndexesToExecute);
-                Trace.WriteLine("   Done!");
+                Trace.TraceInformation("   Done!");
 
                 // Force query's to wait for index's to catch up. Unit Testing only :P
-                Trace.WriteLine(
+                Trace.TraceInformation(
                     "Forcing queries to always wait until they are not stale. aka. It's like => WaitForNonStaleResultsAsOfLastWrite.");
                 documentStore.RegisterListener(new NoStaleQueriesListener());
 
-                Trace.WriteLine("** Finished initializing the Document Store.");
-                Trace.WriteLine("    ** Number of Documents: " +
-                                documentStore.DatabaseCommands.GetStatistics().CountOfDocuments);
-                Trace.WriteLine("    ** Number of Indexes: " +
-                                documentStore.DatabaseCommands.GetStatistics().CountOfIndexes);
+                Trace.TraceInformation("** Finished initializing the Document Store.");
+                Trace.TraceInformation("    ** Number of Documents: " +
+                                       documentStore.DatabaseCommands.GetStatistics().CountOfDocuments);
+                Trace.TraceInformation("    ** Number of Indexes: " +
+                                       documentStore.DatabaseCommands.GetStatistics().CountOfIndexes);
 
                 _documentStore = documentStore;
 
@@ -156,7 +156,7 @@ namespace WorldDomination.Raven.Tests.Helpers
         /// </summary>
         public void Dispose()
         {
-            Trace.WriteLine(
+            Trace.TraceInformation(
                 "Disposing of RavenDbTest class. This will clean up any Document Sessions and the Document Store.");
             if (DocumentStore.WasDisposed)
             {
@@ -164,7 +164,7 @@ namespace WorldDomination.Raven.Tests.Helpers
             }
 
             // Assert for any errors.
-            Trace.WriteLine("Asserting for any DocumentStore errors.");
+            Trace.TraceInformation("Asserting for any DocumentStore errors.");
             DocumentStore.AssertDocumentStoreErrors();
 
             // Clean up.
@@ -173,15 +173,15 @@ namespace WorldDomination.Raven.Tests.Helpers
                 Trace.WriteLine("Found some Document Sessions that exist. Lets clean them up :-");
                 foreach (var key in _documentSessions.Keys)
                 {
-                    Trace.Write("    - Found Key: " + key);
+                    Trace.TraceInformation("    - Found Key: " + key);
                     _documentSessions[key].Dispose();
-                    Trace.WriteLine(" ... Document Session now disposed! ");
+                    Trace.TraceInformation(" ... Document Session now disposed! ");
                 }
             }
 
-            Trace.Write("Disposing the Document Store ... ");
+            Trace.TraceInformation("Disposing the Document Store ... ");
             DocumentStore.Dispose();
-            Trace.WriteLine("Done!");
+            Trace.TraceInformation("Done!");
         }
 
         #endregion
@@ -195,14 +195,14 @@ namespace WorldDomination.Raven.Tests.Helpers
         {
             if (_documentSessions == null)
             {
-                Trace.WriteLine("Creating a new Document Session dictionary to hold all our sessions.");
+                Trace.TraceInformation("Creating a new Document Session dictionary to hold all our sessions.");
                 _documentSessions = new Dictionary<string, IDocumentSession>();
             }
 
             // Do we have the key?
             if (!_documentSessions.ContainsKey(key))
             {
-                Trace.WriteLine("Document Session Key [" + key + "] doesn't exist. Creating a new dictionary item.");
+                Trace.TraceInformation("Document Session Key [" + key + "] doesn't exist. Creating a new dictionary item.");
                 _documentSessions.Add(key, DocumentStore.OpenSession());
             }
 

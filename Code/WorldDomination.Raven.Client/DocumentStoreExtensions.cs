@@ -31,7 +31,7 @@ namespace WorldDomination.Raven.Client
             // Index initialisation.
             if (indexesToExecute != null)
             {
-                Trace.WriteLine("Executing indexes that have been manually provided ...");
+                Trace.TraceInformation("Executing indexes that have been manually provided ...");
                 Type[] indexes = (from type in indexesToExecute
                                   where typeof(AbstractIndexCreationTask).IsAssignableFrom(type)
                                   select type).ToArray();
@@ -45,13 +45,13 @@ namespace WorldDomination.Raven.Client
             }
             else if (assemblyToScanForIndexes != null)
             {
-                Trace.WriteLine("Scanning assemblies for indexes that might exist within them ...");
+                Trace.TraceInformation("Scanning assemblies for indexes that might exist within them ...");
                 IndexCreation.CreateIndexes(assemblyToScanForIndexes.Assembly, documentStore);
-                Trace.WriteLine("    Done!");
+                Trace.TraceInformation("    Done!");
             }
             else
             {
-                Trace.WriteLine("!!WARNING!! : No manual indexes where provided and not asked to scan any assemblies for indexes.");
+                Trace.TraceWarning("!!WARNING!! : No manual indexes where provided and not asked to scan any assemblies for indexes. That's fine .. but we're just telling you that this -might- be a problem.");
             }
 
             // Create our Seed Data (if provided).
@@ -62,6 +62,9 @@ namespace WorldDomination.Raven.Client
 
             // Now lets check to make sure there are now errors.
             documentStore.AssertDocumentStoreErrors();
+
+            // Display any statistics.
+            ReportOnInitializedStatistics(documentStore);
         }
 
         /// <summary>
@@ -95,7 +98,7 @@ namespace WorldDomination.Raven.Client
                                                         ? "No Error message .. err??"
                                                         : serverError.Error);
 
-                Trace.WriteLine(errorMessage);
+                Trace.TraceError(errorMessage);
             }
 
             throw new InvalidOperationException("DocumentStore has some errors. Dast is nict gut.");
@@ -106,7 +109,7 @@ namespace WorldDomination.Raven.Client
             while (documentStore.DatabaseCommands.GetStatistics().StaleIndexes.Length != 0)
             {
                 Thread.Sleep(50);
-                Trace.WriteLine("Waiting for indexes to stop being stale ...");
+                Trace.TraceInformation("Waiting for indexes to stop being stale ...");
             }
         }
 
@@ -132,7 +135,7 @@ namespace WorldDomination.Raven.Client
                 }
 
                 // Store each collection of fake seeded data.
-                Trace.WriteLine("Seeding Data :-");
+                Trace.TraceInformation("Seeding Data :-");
                 foreach (IEnumerable collection in seedData)
                 {
                     int count = 0;
@@ -147,9 +150,9 @@ namespace WorldDomination.Raven.Client
                         }
                         documentSession.Store(entity);
                     }
-                    Trace.WriteLine(string.Format("   --- {0} {1}", count, entityName));
+                    Trace.TraceInformation(string.Format("   --- {0} {1}", count, entityName));
                 }
-                Trace.WriteLine("   Done!");
+                Trace.TraceInformation("   Done!");
 
                 // Commit this transaction.
                 documentSession.SaveChanges();
@@ -157,6 +160,28 @@ namespace WorldDomination.Raven.Client
                 // Make sure all our indexes are not stale.
                 documentStore.WaitForStaleIndexesToComplete();
             }
+        }
+
+        private static void ReportOnInitializedStatistics(IDocumentStore documentStore)
+        {
+            if (documentStore == null)
+            {
+                throw new ArgumentNullException("documentStore");
+            }
+
+            Trace.TraceInformation("+-------------------------------------------------------------+");
+            Trace.TraceInformation("+  RavenDb Initialization Report                              +");
+            Trace.TraceInformation("+  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^                              +");
+            Trace.TraceInformation("+  o) Tenant Id: {0}         +", documentStore.DatabaseCommands.GetStatistics().DatabaseId);
+            Trace.TraceInformation(string.Format("+  o) Number of Documents: {0, -35}+",
+                documentStore.DatabaseCommands.GetStatistics().CountOfDocuments));
+            Trace.TraceInformation(string.Format("+  o) Number of Indexes: {0,-37}+",
+                documentStore.DatabaseCommands.GetStatistics().CountOfIndexes));
+            Trace.TraceInformation(string.Format("+  o) Number of ~Stale Indexes: {0,-30}+",
+                                   documentStore.DatabaseCommands.GetStatistics().StaleIndexes == null
+                                       ? 0
+                                       : documentStore.DatabaseCommands.GetStatistics().StaleIndexes.Count()));
+            Trace.TraceInformation("+-------------------------------------------------------------+");
         }
     }
 }
