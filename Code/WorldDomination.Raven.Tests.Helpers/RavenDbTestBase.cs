@@ -48,7 +48,7 @@ namespace WorldDomination.Raven.Tests.Helpers
         {
             get
             {
-                Trace.WriteLine("* " + (_dataToBeSeeded == null ? 0 : _dataToBeSeeded.Count) +
+                Trace.TraceInformation("* " + (_dataToBeSeeded == null ? 0 : _dataToBeSeeded.Count) +
                                 " collection(s) of objects have been requested to be seeded (aka. Stored) in the database.");
                 return _dataToBeSeeded;
             }
@@ -170,7 +170,7 @@ namespace WorldDomination.Raven.Tests.Helpers
             // Clean up.
             if (_documentSessions != null)
             {
-                Trace.WriteLine("Found some Document Sessions that exist. Lets clean them up :-");
+                Trace.TraceInformation("Found some Document Sessions that exist. Lets clean them up :-");
                 foreach (var key in _documentSessions.Keys)
                 {
                     Trace.TraceInformation("    - Found Key: " + key);

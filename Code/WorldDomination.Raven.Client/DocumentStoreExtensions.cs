@@ -41,7 +41,7 @@ namespace WorldDomination.Raven.Client
                 }
 
                 IndexCreation.CreateIndexes(new CompositionContainer(new TypeCatalog(indexes)), documentStore);
-                Trace.WriteLine("    Done!");
+                Trace.TraceInformation("    Done!");
             }
             else if (assemblyToScanForIndexes != null)
             {
