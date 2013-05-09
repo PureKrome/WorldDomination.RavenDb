@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Raven.Client;
+using Raven.Client.Document;
 using WorldDomination.Raven.Client.Tests.Entities;
 using WorldDomination.Raven.Tests.Helpers;
 using Xunit;
@@ -138,7 +139,7 @@ namespace WorldDomination.Raven.Client.Tests
             }
 
             [Fact]
-            public void GivenDocumentStoreUrlAfterTheDocumentStoreWasCreated_InitializeWithDefaults_ThrowsAnException()
+            public void GivenADocumentStoreUrlAfterTheDocumentStoreWasCreated_InitializeWithDefaults_ThrowsAnException()
             {
                 // Arrange.
                 var documentSession = DocumentSession;
@@ -148,6 +149,25 @@ namespace WorldDomination.Raven.Client.Tests
                                                                       DocumentStoreUrl = "whatever");
                 Assert.NotNull(result);
                 Assert.Equal("The DocumentStore has already been created and Initialized. As such, changes to the DocumentStore Url will not be used. Therefore, set this value BEFORE your first call to a DocumentSession (which in effect creates the DocumentStore pointing to your desired location).", result.Message);
+            }
+
+            [Fact]
+            public void GivenADocumentConvention_InitializeWithDefaults_Works()
+            {
+                // Arrange.
+                DocumentConvention = new DocumentConvention
+                                     {
+                                         // Will get overriden.
+                                         DefaultQueryingConsistency = ConsistencyOptions.MonotonicRead
+                                     };
+                // Act.
+                IDocumentSession documentSession = DocumentSession;
+
+                // Assert.
+                Assert.NotNull(documentSession);
+                Assert.NotNull(documentSession.Advanced.DocumentStore);
+                Assert.Equal(0, documentSession.Advanced.DocumentStore.DatabaseCommands.GetStatistics().CountOfDocuments);
+                Assert.Equal(0, documentSession.Advanced.DocumentStore.DatabaseCommands.GetStatistics().CountOfIndexes);
             }
         }
     }

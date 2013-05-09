@@ -49,14 +49,15 @@ namespace WorldDomination.Raven.Tests.Helpers
             get
             {
                 Trace.TraceInformation("* " + (_dataToBeSeeded == null ? 0 : _dataToBeSeeded.Count) +
-                                " collection(s) of objects have been requested to be seeded (aka. Stored) in the database.");
+                                       " collection(s) of objects have been requested to be seeded (aka. Stored) in the database.");
                 return _dataToBeSeeded;
             }
             set
             {
                 if (_documentStore != null)
                 {
-                    throw new InvalidOperationException("The DocumentStore has already been created and Initialized. As such, changes to the Seed data list will not be used. Therefore, set this collection BEFORE your first call to a DocumentSession (which in effect creates the DocumentStore if it has been created).");
+                    throw new InvalidOperationException(
+                        "The DocumentStore has already been created and Initialized. As such, changes to the Seed data list will not be used. Therefore, set this collection BEFORE your first call to a DocumentSession (which in effect creates the DocumentStore if it has been created).");
                 }
 
                 _dataToBeSeeded = value;
@@ -69,20 +70,23 @@ namespace WorldDomination.Raven.Tests.Helpers
         /// <remarks>This is a vary rare case of debugging. Generally, you do not set the value of this property and just use the embedded DocumentStore for in memory tests. Sometimes, you might want to see what data has actually been stored because there's something going wrong and you can't seem to programmatically debug the issue. Therefore, you can use a normal DocumentStore instance.</remarks>
         protected string DocumentStoreUrl
         {
-            get
-            {
-                return _documentStoreUrl;
-            }
+            get { return _documentStoreUrl; }
             set
             {
                 if (_documentStore != null)
                 {
-                    throw new InvalidOperationException("The DocumentStore has already been created and Initialized. As such, changes to the DocumentStore Url will not be used. Therefore, set this value BEFORE your first call to a DocumentSession (which in effect creates the DocumentStore pointing to your desired location).");
+                    throw new InvalidOperationException(
+                        "The DocumentStore has already been created and Initialized. As such, changes to the DocumentStore Url will not be used. Therefore, set this value BEFORE your first call to a DocumentSession (which in effect creates the DocumentStore pointing to your desired location).");
                 }
 
                 _documentStoreUrl = value;
             }
         }
+
+        /// <summary>
+        ///     Some custom document conventions. Eg. You might require a custom JsonContractResolver to serialize/deserialize IPAddresses.
+        /// </summary>
+        protected DocumentConvention DocumentConvention { get; set; }
 
         private IDocumentStore DocumentStore
         {
@@ -105,7 +109,8 @@ namespace WorldDomination.Raven.Tests.Helpers
                 }
                 else
                 {
-                    Trace.TraceInformation("The DocumentStore Url [" + DocumentStoreUrl + "] was provided. Creating a new (normal) DocumentStore with a Tenant named [UnitTests].");
+                    Trace.TraceInformation("The DocumentStore Url [" + DocumentStoreUrl +
+                                           "] was provided. Creating a new (normal) DocumentStore with a Tenant named [UnitTests].");
                     documentStore = new DocumentStore
                                     {
                                         Url = DocumentStoreUrl,
@@ -113,12 +118,22 @@ namespace WorldDomination.Raven.Tests.Helpers
                                     };
                 }
 
-                Trace.TraceInformation("Setting DocumentStore Conventions: ConsistencyOptions.QueryYourWrites.");
-                documentStore.Conventions = new DocumentConvention
-                                            {
-                                                DefaultQueryingConsistency =
-                                                    ConsistencyOptions.QueryYourWrites
-                                            };
+                if (DocumentConvention != null)
+                {
+                    Trace.TraceInformation(
+                        "* Using the provided DocumentStore DocumentConvention object :) Forcing the default DefaultQueryingConsistency to be ConsistencyOptions.QueryYourWrites.");
+                    DocumentConvention.DefaultQueryingConsistency = ConsistencyOptions.QueryYourWrites;
+                    documentStore.Conventions = DocumentConvention;
+                }
+                else
+                {
+                    Trace.TraceInformation("Setting DocumentStore Conventions: ConsistencyOptions.QueryYourWrites.");
+                    documentStore.Conventions = new DocumentConvention
+                                                {
+                                                    DefaultQueryingConsistency =
+                                                        ConsistencyOptions.QueryYourWrites
+                                                };
+                }
 
                 Trace.TraceInformation("Initializing data with Defaults :-");
                 documentStore.InitializeWithDefaults(DataToBeSeeded, IndexesToExecute);
@@ -202,7 +217,8 @@ namespace WorldDomination.Raven.Tests.Helpers
             // Do we have the key?
             if (!_documentSessions.ContainsKey(key))
             {
-                Trace.TraceInformation("Document Session Key [" + key + "] doesn't exist. Creating a new dictionary item.");
+                Trace.TraceInformation("Document Session Key [" + key +
+                                       "] doesn't exist. Creating a new dictionary item.");
                 _documentSessions.Add(key, DocumentStore.OpenSession());
             }
 
