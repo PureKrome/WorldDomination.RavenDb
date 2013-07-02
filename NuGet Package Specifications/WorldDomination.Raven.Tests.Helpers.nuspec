@@ -1,0 +1,38 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/10/nuspec.xsd">
+    <metadata>
+        <id>WorldDomination.Raven.Tests.Helpers</id>
+        <version>0.8-preparing-for-v25</version>
+        <title>WorldDomination.Raven.Tests.Helpers</title>
+        <authors>Pure Krome</authors>
+        <owners>Pure Krome</owners>
+        <projectUrl>https://github.com/PureKrome/WorldDomination.Raven</projectUrl>
+        <iconUrl>http://i.imgur.com/bR4Yf.jpg</iconUrl>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <description>### RavenDb Testing power tools
+- RavenDbTestBase to cut back the verbose test code.
+- Quick access to multiple Document Sessions.
+- Indexes are always indexed before any queries can be executed.
+
+------------------------------------------------
+
+There is a fair bit of ceremony required when creating some A/A/A test code when you're leveraging RavenDb (Embedded).
+
+Lets reduce the time it takes to write that code.
+
+This library helps do that!
+
+By inheriting from the RaveDbTestBase class, most of this verbose code is now done for you in the base class :)</description>
+        <summary>Reduce the time it takes to write Tests that leverage RavenDb.</summary>
+        <releaseNotes />
+        <copyright>2012</copyright>
+        <language>en-au</language>
+        <tags>raven ravendb unit-tests unittests tests magical unicorn magicalunicorn worldomination worlddomination world-domination</tags>
+        <dependencies>
+            <dependency id="WorldDomination.Raven.Client" version="0.8-preparing-for-v25" />
+        </dependencies>
+    </metadata>
+    <files>
+        <file src="..\Code\WorldDomination.Raven.Tests.Helpers\bin\Release\WorldDomination.Raven.Tests.Helpers.dll" target="lib\net40\WorldDomination.Raven.Tests.Helpers.dll" />
+    </files>
+</package>
