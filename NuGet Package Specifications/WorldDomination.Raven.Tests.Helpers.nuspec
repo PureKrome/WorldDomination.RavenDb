@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/10/nuspec.xsd">
     <metadata>
         <id>WorldDomination.Raven.Tests.Helpers</id>
-        <version>0.8-preparing-for-v25</version>
+        <version>0.8.2-preparing-for-v25</version>
         <title>WorldDomination.Raven.Tests.Helpers</title>
         <authors>Pure Krome</authors>
         <owners>Pure Krome</owners>
@@ -33,6 +33,7 @@ By inheriting from the RaveDbTestBase class, most of this verbose code is now do
         </dependencies>
     </metadata>
     <files>
-        <file src="..\Code\WorldDomination.Raven.Tests.Helpers\bin\Release\WorldDomination.Raven.Tests.Helpers.dll" target="lib\net40\WorldDomination.Raven.Tests.Helpers.dll" />
+        <file src="..\Code\WorldDomination.Raven.Tests.Helpers-4.0\bin\Release\WorldDomination.Raven.Tests.Helpers.dll" target="lib\net40\WorldDomination.Raven.Tests.Helpers.dll" />
+        <file src="..\Code\WorldDomination.Raven.Tests.Helpers\bin\Release\WorldDomination.Raven.Tests.Helpers.dll" target="lib\net45\WorldDomination.Raven.Tests.Helpers.dll" />
     </files>
 </package>

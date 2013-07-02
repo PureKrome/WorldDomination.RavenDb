@@ -19,6 +19,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared Assembly Info", "Sha
 		Code\Shared Assembly Info\SharedAssemblyInfo.cs = Code\Shared Assembly Info\SharedAssemblyInfo.cs
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".NET 4.0 Projects", ".NET 4.0 Projects", "{851B6539-FED9-487A-83A6-C5177D400978}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WorldDomination.Raven.Client-4.0", "Code\WorldDomination.Raven.Client-4.0\WorldDomination.Raven.Client-4.0.csproj", "{D52A72D2-560B-410D-AFA9-98DBE348AF8E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WorldDomination.Raven.Tests.Helpers-4.0", "Code\WorldDomination.Raven.Tests.Helpers-4.0\WorldDomination.Raven.Tests.Helpers-4.0.csproj", "{23901347-540B-4B62-9046-595534690862}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -37,8 +43,20 @@ Global
 		{365385CD-7BFC-4585-B303-341383FD67A2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{365385CD-7BFC-4585-B303-341383FD67A2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{365385CD-7BFC-4585-B303-341383FD67A2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D52A72D2-560B-410D-AFA9-98DBE348AF8E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D52A72D2-560B-410D-AFA9-98DBE348AF8E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D52A72D2-560B-410D-AFA9-98DBE348AF8E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D52A72D2-560B-410D-AFA9-98DBE348AF8E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{23901347-540B-4B62-9046-595534690862}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{23901347-540B-4B62-9046-595534690862}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{23901347-540B-4B62-9046-595534690862}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{23901347-540B-4B62-9046-595534690862}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{D52A72D2-560B-410D-AFA9-98DBE348AF8E} = {851B6539-FED9-487A-83A6-C5177D400978}
+		{23901347-540B-4B62-9046-595534690862} = {851B6539-FED9-487A-83A6-C5177D400978}
 	EndGlobalSection
 EndGlobal
