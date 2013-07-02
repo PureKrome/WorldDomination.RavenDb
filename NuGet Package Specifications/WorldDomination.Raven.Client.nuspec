@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/10/nuspec.xsd">
     <metadata>
         <id>WorldDomination.Raven.Client</id>
-        <version>0.8-preparing-for-v25</version>
+        <version>0.8.1-preparing-for-v25</version>
         <title>WorldDomination.Raven.Client</title>
         <authors>Pure Krome</authors>
         <owners>Pure Krome</owners>
@@ -31,7 +31,6 @@ This library reduces the code required to take advantage of the power found in R
         </dependencies>
     </metadata>
     <files>
-        <file src="lib\net40\_._" target="lib\net40\_._" />
-        <file src="..\Code\WorldDomination.Raven.Client\bin\Release\WorldDomination.Raven.Client.dll" target="WorldDomination.Raven.Client.dll" />
+        <file src="..\Code\WorldDomination.Raven.Client\bin\Release\WorldDomination.Raven.Client.dll" target="lib\net40\WorldDomination.Raven.Client.dll" />
     </files>
 </package>
