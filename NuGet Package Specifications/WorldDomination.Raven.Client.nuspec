@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/10/nuspec.xsd">
     <metadata>
         <id>WorldDomination.Raven.Client</id>
-        <version>0.8.2-preparing-for-v25</version>
+        <version>0.9.0</version>
         <title>WorldDomination.Raven.Client</title>
         <authors>Pure Krome</authors>
         <owners>Pure Krome</owners>
@@ -27,7 +27,7 @@ This library reduces the code required to take advantage of the power found in R
         <language>en-au</language>
         <tags>raven ravendb magical unicorn magicalunicorn worldomination worlddomination world-domination</tags>
         <dependencies>
-            <dependency id="RavenDB.Client" version="2.5.2631-Unstable" />
+            <dependency id="RavenDB.Client" version="2.5.2666" />
         </dependencies>
     </metadata>
     <files>
