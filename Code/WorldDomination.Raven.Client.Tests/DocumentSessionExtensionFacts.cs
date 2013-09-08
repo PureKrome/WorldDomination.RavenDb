@@ -10,8 +10,6 @@ using Xunit;
 
 namespace WorldDomination.Raven.Client.Tests
 {
-    // ReSharper disable InconsistentNaming
-
     public class DocumentStoreExtensionTests
     {
         public class InitializeWithDefaultsFacts : RavenDbTestBase
@@ -158,7 +156,7 @@ namespace WorldDomination.Raven.Client.Tests
                 DocumentConvention = new DocumentConvention
                                      {
                                          // Will get overriden.
-                                         DefaultQueryingConsistency = ConsistencyOptions.MonotonicRead
+                                         DefaultQueryingConsistency = ConsistencyOptions.None
                                      };
                 // Act.
                 IDocumentSession documentSession = DocumentSession;
@@ -171,6 +169,4 @@ namespace WorldDomination.Raven.Client.Tests
             }
         }
     }
-
-    // ReSharper restore InconsistentNaming
 }

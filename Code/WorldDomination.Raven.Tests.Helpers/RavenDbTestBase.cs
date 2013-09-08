@@ -121,8 +121,8 @@ namespace WorldDomination.Raven.Tests.Helpers
                 if (DocumentConvention != null)
                 {
                     Trace.TraceInformation(
-                        "* Using the provided DocumentStore DocumentConvention object :) Forcing the default DefaultQueryingConsistency to be ConsistencyOptions.QueryYourWrites.");
-                    DocumentConvention.DefaultQueryingConsistency = ConsistencyOptions.QueryYourWrites;
+                        "* Using the provided DocumentStore DocumentConvention object :) Forcing the default DefaultQueryingConsistency to be ConsistencyOptions.AlwaysWaitForNonStaleResultsAsOfLastWrite.");
+                    DocumentConvention.DefaultQueryingConsistency = ConsistencyOptions.AlwaysWaitForNonStaleResultsAsOfLastWrite;
                     documentStore.Conventions = DocumentConvention;
                 }
                 else
