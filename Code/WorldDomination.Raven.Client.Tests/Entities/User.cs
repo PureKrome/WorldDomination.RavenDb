@@ -18,7 +18,7 @@ namespace WorldDomination.Raven.Client.Tests.Entities
                                 new User
                                 {
                                     Name = "Leah Culver",
-                                    Tags = new List<string> {"pounce", "grove.io", "babe"}
+                                    Tags = new List<string> {"pounce", "grove.io"}
                                 },
                                 new User
                                 {

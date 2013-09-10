@@ -2,8 +2,8 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
     <metadata>
         <id>WorldDomination.Raven.Client</id>
-        <version>0.10.0</version>
-        <title>WorldDomination.Raven.Client</title>
+        <version>0.11.0</version>
+        <title>WorldDomination.Raven.Client (RavenDb 2.5)</title>
         <authors>Pure Krome</authors>
         <owners>Pure Krome</owners>
         <projectUrl>https://github.com/PureKrome/WorldDomination.Raven</projectUrl>
@@ -18,7 +18,7 @@
 ------------------------------------------------
       
 RavenDb is a nice Database to work with, but at times there's a lot of tweaks and ceremony required to just 'set stuff up'.
-This is -really- noticible when we're writing tests.
+This is -really- noticeable when you're writing tests.
 
 This library reduces the code required to take advantage of the power found in RavenDb by setting up the Database programatically to do what you want it to do.</description>
         <summary>RavenDb extensions to simplify your RavenDb setup code.</summary>

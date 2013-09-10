@@ -122,7 +122,7 @@ namespace WorldDomination.Raven.Tests.Helpers
                 {
                     Trace.TraceInformation(
                         "* Using the provided DocumentStore DocumentConvention object :) Forcing the default DefaultQueryingConsistency to be ConsistencyOptions.AlwaysWaitForNonStaleResultsAsOfLastWrite.");
-                    DocumentConvention.DefaultQueryingConsistency = ConsistencyOptions.QueryYourWrites;
+                    DocumentConvention.DefaultQueryingConsistency = ConsistencyOptions.AlwaysWaitForNonStaleResultsAsOfLastWrite;
                     documentStore.Conventions = DocumentConvention;
                 }
                 else
@@ -131,7 +131,7 @@ namespace WorldDomination.Raven.Tests.Helpers
                     documentStore.Conventions = new DocumentConvention
                                                 {
                                                     DefaultQueryingConsistency =
-                                                        ConsistencyOptions.QueryYourWrites
+                                                        ConsistencyOptions.AlwaysWaitForNonStaleResultsAsOfLastWrite
                                                 };
                 }
 

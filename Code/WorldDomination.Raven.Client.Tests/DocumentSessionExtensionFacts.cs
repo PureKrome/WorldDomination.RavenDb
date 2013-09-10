@@ -156,7 +156,7 @@ namespace WorldDomination.Raven.Client.Tests
                 DocumentConvention = new DocumentConvention
                                      {
                                          // Will get overriden.
-                                         DefaultQueryingConsistency = ConsistencyOptions.MonotonicRead
+                                         DefaultQueryingConsistency = ConsistencyOptions.None
                                      };
                 // Act.
                 IDocumentSession documentSession = DocumentSession;
