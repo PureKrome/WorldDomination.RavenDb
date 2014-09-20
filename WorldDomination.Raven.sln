@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.30110.0
+VisualStudioVersion = 12.0.30501.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WorldDomination.Raven.Tests.Helpers", "Code\WorldDomination.Raven.Tests.Helpers\WorldDomination.Raven.Tests.Helpers.csproj", "{A6E862F7-5E9E-4F6F-8455-370347CEBB0A}"
 EndProject
@@ -13,14 +13,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared Assembly Info", "Sha
 	ProjectSection(SolutionItems) = preProject
 		Code\Shared Assembly Info\SharedAssemblyInfo.cs = Code\Shared Assembly Info\SharedAssemblyInfo.cs
 	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".NET 4.0 Projects", ".NET 4.0 Projects", "{851B6539-FED9-487A-83A6-C5177D400978}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WorldDomination.Raven.Client-4.0", "Code\WorldDomination.Raven.Client-4.0\WorldDomination.Raven.Client-4.0.csproj", "{D52A72D2-560B-410D-AFA9-98DBE348AF8E}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WorldDomination.Raven.Tests.Helpers-4.0", "Code\WorldDomination.Raven.Tests.Helpers-4.0\WorldDomination.Raven.Tests.Helpers-4.0.csproj", "{23901347-540B-4B62-9046-595534690862}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".NET 4.5 Projects", ".NET 4.5 Projects", "{26843244-C820-43F9-B7D9-DDA41F2BE4A4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -40,23 +32,8 @@ Global
 		{365385CD-7BFC-4585-B303-341383FD67A2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{365385CD-7BFC-4585-B303-341383FD67A2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{365385CD-7BFC-4585-B303-341383FD67A2}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D52A72D2-560B-410D-AFA9-98DBE348AF8E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D52A72D2-560B-410D-AFA9-98DBE348AF8E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D52A72D2-560B-410D-AFA9-98DBE348AF8E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D52A72D2-560B-410D-AFA9-98DBE348AF8E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{23901347-540B-4B62-9046-595534690862}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{23901347-540B-4B62-9046-595534690862}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{23901347-540B-4B62-9046-595534690862}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{23901347-540B-4B62-9046-595534690862}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
-		{F347F7DB-39B7-4150-83ED-EFF146831505} = {26843244-C820-43F9-B7D9-DDA41F2BE4A4}
-		{365385CD-7BFC-4585-B303-341383FD67A2} = {26843244-C820-43F9-B7D9-DDA41F2BE4A4}
-		{A6E862F7-5E9E-4F6F-8455-370347CEBB0A} = {26843244-C820-43F9-B7D9-DDA41F2BE4A4}
-		{D52A72D2-560B-410D-AFA9-98DBE348AF8E} = {851B6539-FED9-487A-83A6-C5177D400978}
-		{23901347-540B-4B62-9046-595534690862} = {851B6539-FED9-487A-83A6-C5177D400978}
 	EndGlobalSection
 EndGlobal
