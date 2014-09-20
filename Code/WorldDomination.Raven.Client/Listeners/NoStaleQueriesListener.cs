@@ -6,7 +6,7 @@ namespace WorldDomination.Raven.Client.Listeners
     /// <summary>
     /// Forces all document session queryies to wait for non stale results.
     /// WARNING: This should not be used in production - it's designed for
-    /// use with integration tests.
+    /// use with unit/integration tests.
     /// </summary>
     public class NoStaleQueriesListener : IDocumentQueryListener
     {
