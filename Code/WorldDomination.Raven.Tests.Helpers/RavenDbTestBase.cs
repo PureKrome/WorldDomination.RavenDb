@@ -14,7 +14,7 @@ namespace WorldDomination.Raven.Tests.Helpers
     {
         private const string DefaultSessionKey = "DefaultSession";
         private IList<IEnumerable> _dataToBeSeeded;
-        private IDictionary<string, IDocumentSession> _documentSessions;
+        private IDictionary<string, IAsyncDocumentSession> _asyncDocumentSessions;
         private IDocumentStore _documentStore;
         private string _documentStoreUrl;
         private IList<Type> _indexesToExecute;
@@ -88,7 +88,7 @@ namespace WorldDomination.Raven.Tests.Helpers
         /// </summary>
         protected DocumentConvention DocumentConvention { get; set; }
 
-        private IDocumentStore DocumentStore
+        protected IDocumentStore DocumentStore
         {
             get
             {
@@ -102,6 +102,8 @@ namespace WorldDomination.Raven.Tests.Helpers
                 if (string.IsNullOrEmpty(DocumentStoreUrl))
                 {
                     Trace.TraceInformation("Creating a new Embedded DocumentStore in **RAM**.");
+                    Trace.TraceInformation("** NOTE: If you wish to target an existing document store, please set the 'DocumentStoreUrl' property.");
+
                     documentStore = new EmbeddableDocumentStore
                                     {
                                         RunInMemory = true,
@@ -157,11 +159,11 @@ namespace WorldDomination.Raven.Tests.Helpers
         }
 
         /// <summary>
-        ///     The 'default' Raven document session.
+        ///     The 'default' Raven async document session.
         /// </summary>
-        protected IDocumentSession DocumentSession
+        protected IAsyncDocumentSession AsyncDocumentSession
         {
-            get { return DocumentSessions(DefaultSessionKey); }
+            get { return AsyncDocumentSessions(DefaultSessionKey); }
         }
 
         #region IDisposable Members
@@ -183,13 +185,13 @@ namespace WorldDomination.Raven.Tests.Helpers
             DocumentStore.AssertDocumentStoreErrors();
 
             // Clean up.
-            if (_documentSessions != null)
+            if (_asyncDocumentSessions != null)
             {
                 Trace.TraceInformation("Found some Document Sessions that exist. Lets clean them up :-");
-                foreach (var key in _documentSessions.Keys)
+                foreach (var key in _asyncDocumentSessions.Keys)
                 {
                     Trace.TraceInformation("    - Found Key: " + key);
-                    _documentSessions[key].Dispose();
+                    _asyncDocumentSessions[key].Dispose();
                     Trace.TraceInformation(" ... Document Session now disposed! ");
                 }
             }
@@ -202,27 +204,27 @@ namespace WorldDomination.Raven.Tests.Helpers
         #endregion
 
         /// <summary>
-        ///     A named Raven document session.
+        ///     A named Raven async document session.
         /// </summary>
-        /// <param name="key">The key name of a document session.</param>
-        /// <returns>The RavenDb document session.</returns>
-        protected IDocumentSession DocumentSessions(string key)
+        /// <param name="key">The key name of an async document session.</param>
+        /// <returns>The RavenDb async document session.</returns>
+        protected IAsyncDocumentSession AsyncDocumentSessions(string key)
         {
-            if (_documentSessions == null)
+            if (_asyncDocumentSessions == null)
             {
-                Trace.TraceInformation("Creating a new Document Session dictionary to hold all our sessions.");
-                _documentSessions = new Dictionary<string, IDocumentSession>();
+                Trace.TraceInformation("Creating a new async Document Session dictionary to hold all our sessions.");
+                _asyncDocumentSessions = new Dictionary<string, IAsyncDocumentSession>();
             }
 
             // Do we have the key?
-            if (!_documentSessions.ContainsKey(key))
+            if (!_asyncDocumentSessions.ContainsKey(key))
             {
-                Trace.TraceInformation("Document Session Key [" + key +
+                Trace.TraceInformation("Async Document Session Key [" + key +
                                        "] doesn't exist. Creating a new dictionary item.");
-                _documentSessions.Add(key, DocumentStore.OpenSession());
+                _asyncDocumentSessions.Add(key, DocumentStore.OpenAsyncSession());
             }
 
-            return _documentSessions[key];
+            return _asyncDocumentSessions[key];
         }
     }
 }

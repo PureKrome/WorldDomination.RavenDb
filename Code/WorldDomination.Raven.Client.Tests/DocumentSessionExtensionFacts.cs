@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Raven.Client;
 using Raven.Client.Document;
 using WorldDomination.Raven.Client.Tests.Entities;
@@ -20,7 +21,7 @@ namespace WorldDomination.Raven.Client.Tests
                 // Arrange.
 
                 // Act.
-                IDocumentSession documentSession = DocumentSession;
+                IAsyncDocumentSession documentSession = AsyncDocumentSession;
 
                 // Assert.
                 Assert.NotNull(documentSession);
@@ -35,11 +36,12 @@ namespace WorldDomination.Raven.Client.Tests
                 // Arrange.
                 DataToBeSeeded = User.CreateFakeData().ToList();
                 // NOTE: Each collection has an identity counter (it is assumed).
-                int numberOfDocuments = DataToBeSeeded.Cast<IList>().Sum(collection => collection.Count) +
-                                        DataToBeSeeded.Count();
+                int numberOfDocuments = DataToBeSeeded
+                    .Cast<IList>()
+                    .Sum(collection => collection.Count) + DataToBeSeeded.Count();
 
                 // Act.
-                IDocumentSession documentSession = DocumentSession;
+                IAsyncDocumentSession documentSession = AsyncDocumentSession;
 
                 // Assert.
                 Assert.NotNull(documentSession);
@@ -57,10 +59,14 @@ namespace WorldDomination.Raven.Client.Tests
                 // NOTE: Each collection has an identity counter (it is assumed).
                 int numberOfDocuments = DataToBeSeeded.Cast<IList>().Sum(collection => collection.Count) +
                                         DataToBeSeeded.Count();
-                IndexesToExecute = new List<Type> {typeof (Users_Search), typeof (Users_TagsSummary)};
+                IndexesToExecute = new List<Type>
+                {
+                    typeof (Users_Search), 
+                    typeof (Users_TagsSummary)
+                };
 
                 // Act.
-                IDocumentSession documentSession = DocumentSession;
+                IAsyncDocumentSession documentSession = AsyncDocumentSession;
 
                 // Assert.
                 Assert.NotNull(documentSession);
@@ -85,22 +91,22 @@ namespace WorldDomination.Raven.Client.Tests
             }
 
             [Fact]
-            public void
+            public async Task
                 GivenSomeFakeDataWhichWeStoreAndUseTwoSessions_InitializeWithDefaults_StoresTheDataAndUsingTwoSessionsWorks
                 ()
             {
                 // Arrange.
                 DataToBeSeeded = User.CreateFakeData().ToList();
                 var user = new User {Name = "Oren Eini", Tags = new[] {"RavenDb", "Hibernating Rhino's"}};
-                IDocumentSession documentSession = DocumentSession;
-                IDocumentSession documentSession2 = DocumentSessions("AnotherSession");
+                IAsyncDocumentSession documentSession = AsyncDocumentSession;
+                IAsyncDocumentSession documentSession2 = AsyncDocumentSessions("AnotherSession");
 
                 // Act.
-                documentSession.Store(user);
-                documentSession.SaveChanges();
+                await documentSession.StoreAsync(user);
+                await documentSession.SaveChangesAsync();
 
                 // We now have a new user Id. So lets do a fresh load of it.
-                var existingUser = documentSession2.Load<User>(user.Id);
+                var existingUser = await documentSession2.LoadAsync<User>(user.Id);
 
                 // Arrange.
                 Assert.NotNull(existingUser);
@@ -112,7 +118,7 @@ namespace WorldDomination.Raven.Client.Tests
             public void GivenSomeIndexToExecuteAfterTheDocumentStoreWasCreated_InitializeWithDefaults_ThrowsAnException()
             {
                 // Arrange.
-                var documentSession = DocumentSession;
+                IAsyncDocumentSession documentSession = AsyncDocumentSession;
 
                 // Act and Assert.
                 var result = Assert.Throws<InvalidOperationException>(() =>
@@ -126,7 +132,7 @@ namespace WorldDomination.Raven.Client.Tests
             public void GivenSomeSeedDataAfterTheDocumentStoreWasCreated_InitializeWithDefaults_ThrowsAnException()
             {
                 // Arrange.
-                var documentSession = DocumentSession;
+                IAsyncDocumentSession documentSession = AsyncDocumentSession;
 
                 // Act and Assert.
                 var result = Assert.Throws<InvalidOperationException>(() =>
@@ -140,7 +146,7 @@ namespace WorldDomination.Raven.Client.Tests
             public void GivenADocumentStoreUrlAfterTheDocumentStoreWasCreated_InitializeWithDefaults_ThrowsAnException()
             {
                 // Arrange.
-                var documentSession = DocumentSession;
+                IAsyncDocumentSession documentSession = AsyncDocumentSession;
 
                 // Act and Assert.
                 var result = Assert.Throws<InvalidOperationException>(() =>
@@ -159,7 +165,7 @@ namespace WorldDomination.Raven.Client.Tests
                                          DefaultQueryingConsistency = ConsistencyOptions.None
                                      };
                 // Act.
-                IDocumentSession documentSession = DocumentSession;
+                IAsyncDocumentSession documentSession = AsyncDocumentSession;
 
                 // Assert.
                 Assert.NotNull(documentSession);
