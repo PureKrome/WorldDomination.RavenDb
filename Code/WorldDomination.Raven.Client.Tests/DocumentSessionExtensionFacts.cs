@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Raven.Client;
 using Raven.Client.Document;
@@ -149,10 +150,10 @@ namespace WorldDomination.Raven.Client.Tests
                 IAsyncDocumentSession documentSession = AsyncDocumentSession;
 
                 // Act and Assert.
-                var result = Assert.Throws<InvalidOperationException>(() =>
-                                                                      DocumentStoreUrl = "whatever");
+                var result = Assert.Throws<InvalidOperationException>(
+                    () => ExistingDocumentStoreSettings = new ExistingDocumentStoreSettings("whatever"));
                 Assert.NotNull(result);
-                Assert.Equal("The DocumentStore has already been created and Initialized. As such, changes to the DocumentStore Url will not be used. Therefore, set this value BEFORE your first call to a DocumentSession (which in effect creates the DocumentStore pointing to your desired location).", result.Message);
+                Assert.Equal("The DocumentStore has already been created and Initialized. As such, the ExistingDocumentStoreSettings instance cannot be used. Therefore, set this value BEFORE your first call to a AsyncDocumentSession (which in effect creates the DocumentStore pointing to your desired location).", result.Message);
             }
 
             [Fact]

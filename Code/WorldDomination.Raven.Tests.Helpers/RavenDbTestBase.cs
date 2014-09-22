@@ -16,7 +16,8 @@ namespace WorldDomination.Raven.Tests.Helpers
         private IList<IEnumerable> _dataToBeSeeded;
         private IDictionary<string, IAsyncDocumentSession> _asyncDocumentSessions;
         private IDocumentStore _documentStore;
-        private string _documentStoreUrl;
+        private ExistingDocumentStoreSettings _existingDocumentStoreSettings;
+
         private IList<Type> _indexesToExecute;
 
         /// <summary>
@@ -64,22 +65,18 @@ namespace WorldDomination.Raven.Tests.Helpers
             }
         }
 
-        /// <summary>
-        ///     Optional: Url of another document store to use in the test scenario.
-        /// </summary>
-        /// <remarks>This is a vary rare case of debugging. Generally, you do not set the value of this property and just use the embedded DocumentStore for in memory tests. Sometimes, you might want to see what data has actually been stored because there's something going wrong and you can't seem to programmatically debug the issue. Therefore, you can use a normal DocumentStore instance.</remarks>
-        protected string DocumentStoreUrl
+        protected ExistingDocumentStoreSettings ExistingDocumentStoreSettings
         {
-            get { return _documentStoreUrl; }
+            get { return _existingDocumentStoreSettings; }
             set
             {
                 if (_documentStore != null)
                 {
                     throw new InvalidOperationException(
-                        "The DocumentStore has already been created and Initialized. As such, changes to the DocumentStore Url will not be used. Therefore, set this value BEFORE your first call to a DocumentSession (which in effect creates the DocumentStore pointing to your desired location).");
+                        "The DocumentStore has already been created and Initialized. As such, the ExistingDocumentStoreSettings instance cannot be used. Therefore, set this value BEFORE your first call to a AsyncDocumentSession (which in effect creates the DocumentStore pointing to your desired location).");
                 }
 
-                _documentStoreUrl = value;
+                _existingDocumentStoreSettings = value;
             }
         }
 
@@ -99,7 +96,8 @@ namespace WorldDomination.Raven.Tests.Helpers
 
                 DocumentStore documentStore;
 
-                if (string.IsNullOrEmpty(DocumentStoreUrl))
+                if (ExistingDocumentStoreSettings == null ||
+                    string.IsNullOrWhiteSpace(ExistingDocumentStoreSettings.DocumentStoreUrl))
                 {
                     Trace.TraceInformation("Creating a new Embedded DocumentStore in **RAM**.");
                     Trace.TraceInformation("** NOTE: If you wish to target an existing document store, please set the 'DocumentStoreUrl' property.");
@@ -111,12 +109,13 @@ namespace WorldDomination.Raven.Tests.Helpers
                 }
                 else
                 {
-                    Trace.TraceInformation("The DocumentStore Url [" + DocumentStoreUrl +
-                                           "] was provided. Creating a new (normal) DocumentStore with a Tenant named [UnitTests].");
+                    Trace.TraceInformation("The DocumentStore Url [{0}] was provided. Creating a new (normal) DocumentStore with a Tenant named [{1}].",
+                         ExistingDocumentStoreSettings.DocumentStoreUrl,
+                         ExistingDocumentStoreSettings.DefaultDatabase);
                     documentStore = new DocumentStore
                                     {
-                                        Url = DocumentStoreUrl,
-                                        DefaultDatabase = "UnitTests"
+                                        Url = ExistingDocumentStoreSettings.DocumentStoreUrl,
+                                        DefaultDatabase = ExistingDocumentStoreSettings.DefaultDatabase
                                     };
                 }
 
