@@ -13,13 +13,14 @@ namespace WorldDomination.Raven.Tests.Helpers
         /// </summary>
         /// <param name="documentStoreUrl">string: document store Url. Eg. http://localhost:8080</param>
         /// <param name="defaultDatabase">string: database tenant name.</param>
-        /// <remarks>If a Default Database is not provided, then the we create/connect to a database tenant called 'UnitTests'.</remarks>
-        public ExistingDocumentStoreSettings(string documentStoreUrl,
+        /// <remarks>If a DocumentStore Url is not provided, then we create/connect to the url: http://localhost:8080.<br/>
+        ///          If a Default Database is not provided, then the we create/connect to a database tenant called 'UnitTests'.</remarks>
+        public ExistingDocumentStoreSettings(string documentStoreUrl = null,
             string defaultDatabase = null)
         {
             if (string.IsNullOrWhiteSpace(documentStoreUrl))
             {
-                throw new ArgumentNullException("documentStoreUrl");
+                documentStoreUrl = "http://localhost:8080";
             }
 
             if (string.IsNullOrWhiteSpace(defaultDatabase))

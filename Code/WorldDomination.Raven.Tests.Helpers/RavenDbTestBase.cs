@@ -13,12 +13,32 @@ namespace WorldDomination.Raven.Tests.Helpers
     public abstract class RavenDbTestBase : IDisposable
     {
         private const string DefaultSessionKey = "DefaultSession";
-        private IList<IEnumerable> _dataToBeSeeded;
         private IDictionary<string, IAsyncDocumentSession> _asyncDocumentSessions;
+        private IList<IEnumerable> _dataToBeSeeded;
         private IDocumentStore _documentStore;
         private ExistingDocumentStoreSettings _existingDocumentStoreSettings;
-
         private IList<Type> _indexesToExecute;
+
+        /// <summary>
+        /// A collection of data, which will be 'seeded' during the document store initialization.
+        /// </summary>
+        protected IList<IEnumerable> DataToBeSeeded
+        {
+            get
+            {
+                Trace.TraceInformation(
+                    "* {0} collection(s) of objects have been requested to be seeded (aka. Stored) in the database.",
+                    _dataToBeSeeded == null
+                        ? 0
+                        : _dataToBeSeeded.Count);
+                return _dataToBeSeeded;
+            }
+            set
+            {
+                EnsureDocumentStoreHasNotBeenInitialized("DataToBeSeeded");
+                _dataToBeSeeded = value;
+            }
+        }
 
         /// <summary>
         ///     Collection of Indexes which will be executed during the document store initialization.
@@ -27,44 +47,24 @@ namespace WorldDomination.Raven.Tests.Helpers
         {
             get
             {
-                Trace.TraceInformation("* " + (_indexesToExecute == null ? 0 : _indexesToExecute.Count) +
-                                       " index(es) have been requested to be executed (indexes to be indexed).");
+                Trace.TraceInformation("* {0} index(es)/result transformer(s) have been requested to be executed.",
+                    _indexesToExecute == null 
+                    ? 0 
+                    : _indexesToExecute.Count);
+                                       
                 return _indexesToExecute;
             }
             set
             {
-                if (_documentStore != null)
-                {
-                    throw new InvalidOperationException(
-                        "The DocumentStore has already been created and Initialized. As such, changes to the Index list will not be used. Therefore, set this collection BEFORE your first call to a DocumentSession (which in effect creates the DocumentStore if it has been created).");
-                }
+                EnsureDocumentStoreHasNotBeenInitialized("IndexesToExecute");
                 _indexesToExecute = value;
             }
         }
 
         /// <summary>
-        ///     A collection of data, which will be 'seeded' during the document store initialization.
+        /// Optional: provide an instance to an ExistingDocumentStoreSettings if you wish to connect to a real database.
         /// </summary>
-        protected IList<IEnumerable> DataToBeSeeded
-        {
-            get
-            {
-                Trace.TraceInformation("* " + (_dataToBeSeeded == null ? 0 : _dataToBeSeeded.Count) +
-                                       " collection(s) of objects have been requested to be seeded (aka. Stored) in the database.");
-                return _dataToBeSeeded;
-            }
-            set
-            {
-                if (_documentStore != null)
-                {
-                    throw new InvalidOperationException(
-                        "The DocumentStore has already been created and Initialized. As such, changes to the Seed data list will not be used. Therefore, set this collection BEFORE your first call to a DocumentSession (which in effect creates the DocumentStore if it has been created).");
-                }
-
-                _dataToBeSeeded = value;
-            }
-        }
-
+        /// <remarks><b>CAREFUL!</b> This should rarely be used and most likely not during unit tests. The common scenario for using this is for some specific debugging against a real database (and hopefully that's a copy of some live database, also!) **</remarks>
         protected ExistingDocumentStoreSettings ExistingDocumentStoreSettings
         {
             get { return _existingDocumentStoreSettings; }
@@ -85,6 +85,9 @@ namespace WorldDomination.Raven.Tests.Helpers
         /// </summary>
         protected DocumentConvention DocumentConvention { get; set; }
 
+        /// <summary>
+        /// The main Document Store where all your lovely data will live and smile.
+        /// </summary>
         protected IDocumentStore DocumentStore
         {
             get
@@ -100,40 +103,43 @@ namespace WorldDomination.Raven.Tests.Helpers
                     string.IsNullOrWhiteSpace(ExistingDocumentStoreSettings.DocumentStoreUrl))
                 {
                     Trace.TraceInformation("Creating a new Embedded DocumentStore in **RAM**.");
-                    Trace.TraceInformation("** NOTE: If you wish to target an existing document store, please set the 'DocumentStoreUrl' property.");
+                    Trace.TraceInformation(
+                        "** NOTE: If you wish to target an existing document store, please set the 'DocumentStoreUrl' property.");
 
                     documentStore = new EmbeddableDocumentStore
-                                    {
-                                        RunInMemory = true,
-                                    };
+                    {
+                        RunInMemory = true,
+                    };
                 }
                 else
                 {
-                    Trace.TraceInformation("The DocumentStore Url [{0}] was provided. Creating a new (normal) DocumentStore with a Tenant named [{1}].",
-                         ExistingDocumentStoreSettings.DocumentStoreUrl,
-                         ExistingDocumentStoreSettings.DefaultDatabase);
+                    Trace.TraceInformation(
+                        "The DocumentStore Url [{0}] was provided. Creating a new (normal) DocumentStore with a Tenant named [{1}].",
+                        ExistingDocumentStoreSettings.DocumentStoreUrl,
+                        ExistingDocumentStoreSettings.DefaultDatabase);
                     documentStore = new DocumentStore
-                                    {
-                                        Url = ExistingDocumentStoreSettings.DocumentStoreUrl,
-                                        DefaultDatabase = ExistingDocumentStoreSettings.DefaultDatabase
-                                    };
+                    {
+                        Url = ExistingDocumentStoreSettings.DocumentStoreUrl,
+                        DefaultDatabase = ExistingDocumentStoreSettings.DefaultDatabase
+                    };
                 }
 
                 if (DocumentConvention != null)
                 {
                     Trace.TraceInformation(
                         "* Using the provided DocumentStore DocumentConvention object :) Forcing the default DefaultQueryingConsistency to be ConsistencyOptions.AlwaysWaitForNonStaleResultsAsOfLastWrite.");
-                    DocumentConvention.DefaultQueryingConsistency = ConsistencyOptions.AlwaysWaitForNonStaleResultsAsOfLastWrite;
+                    DocumentConvention.DefaultQueryingConsistency =
+                        ConsistencyOptions.AlwaysWaitForNonStaleResultsAsOfLastWrite;
                     documentStore.Conventions = DocumentConvention;
                 }
                 else
                 {
                     Trace.TraceInformation("Setting DocumentStore Conventions: ConsistencyOptions.QueryYourWrites.");
                     documentStore.Conventions = new DocumentConvention
-                                                {
-                                                    DefaultQueryingConsistency =
-                                                        ConsistencyOptions.AlwaysWaitForNonStaleResultsAsOfLastWrite
-                                                };
+                    {
+                        DefaultQueryingConsistency =
+                            ConsistencyOptions.AlwaysWaitForNonStaleResultsAsOfLastWrite
+                    };
                 }
 
                 Trace.TraceInformation("Initializing data with Defaults :-");
@@ -163,6 +169,30 @@ namespace WorldDomination.Raven.Tests.Helpers
         protected IAsyncDocumentSession AsyncDocumentSession
         {
             get { return AsyncDocumentSessions(DefaultSessionKey); }
+        }
+
+        /// <summary>
+        ///     A named Raven async document session.
+        /// </summary>
+        /// <param name="key">The key name of an async document session.</param>
+        /// <returns>The RavenDb async document session.</returns>
+        protected IAsyncDocumentSession AsyncDocumentSessions(string key)
+        {
+            if (_asyncDocumentSessions == null)
+            {
+                Trace.TraceInformation("Creating a new async Document Session dictionary to hold all our sessions.");
+                _asyncDocumentSessions = new Dictionary<string, IAsyncDocumentSession>();
+            }
+
+            // Do we have the key?
+            if (!_asyncDocumentSessions.ContainsKey(key))
+            {
+                Trace.TraceInformation("Async Document Session Key [" + key +
+                                       "] doesn't exist. Creating a new dictionary item.");
+                _asyncDocumentSessions.Add(key, DocumentStore.OpenAsyncSession());
+            }
+
+            return _asyncDocumentSessions[key];
         }
 
         #region IDisposable Members
@@ -202,28 +232,21 @@ namespace WorldDomination.Raven.Tests.Helpers
 
         #endregion
 
-        /// <summary>
-        ///     A named Raven async document session.
-        /// </summary>
-        /// <param name="key">The key name of an async document session.</param>
-        /// <returns>The RavenDb async document session.</returns>
-        protected IAsyncDocumentSession AsyncDocumentSessions(string key)
+        private void EnsureDocumentStoreHasNotBeenInitialized(string listName)
         {
-            if (_asyncDocumentSessions == null)
+            if (string.IsNullOrWhiteSpace(listName))
             {
-                Trace.TraceInformation("Creating a new async Document Session dictionary to hold all our sessions.");
-                _asyncDocumentSessions = new Dictionary<string, IAsyncDocumentSession>();
+                throw new ArgumentNullException("listName");
             }
 
-            // Do we have the key?
-            if (!_asyncDocumentSessions.ContainsKey(key))
+            if (_documentStore != null)
             {
-                Trace.TraceInformation("Async Document Session Key [" + key +
-                                       "] doesn't exist. Creating a new dictionary item.");
-                _asyncDocumentSessions.Add(key, DocumentStore.OpenAsyncSession());
+                var errorMessage =
+                    string.Format(
+                        "The DocumentStore has already been created and Initialized. As such, changes to the {0} list will not be used. Therefore, set this collection BEFORE your first call to a DocumentSession (which in effect creates the DocumentStore if it has been created).",
+                        listName);
+                throw new InvalidOperationException(errorMessage);
             }
-
-            return _asyncDocumentSessions[key];
         }
     }
 }

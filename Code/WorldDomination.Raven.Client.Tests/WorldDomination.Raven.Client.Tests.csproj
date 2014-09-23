@@ -54,7 +54,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DocumentSessionExtensionFacts.cs" />
+    <Compile Include="Entities\User_SearchTransformer.cs" />
     <Compile Include="Entities\User.cs" />
+    <Compile Include="Entities\Users_TagsSummary.cs" />
+    <Compile Include="Entities\User_Search.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Raven.Client;
 using Raven.Client.Document;
@@ -26,9 +25,9 @@ namespace WorldDomination.Raven.Client.Tests
 
                 // Assert.
                 Assert.NotNull(documentSession);
-                Assert.NotNull(documentSession.Advanced.DocumentStore);
-                Assert.Equal(0, documentSession.Advanced.DocumentStore.DatabaseCommands.GetStatistics().CountOfDocuments);
-                Assert.Equal(0, documentSession.Advanced.DocumentStore.DatabaseCommands.GetStatistics().CountOfIndexes);
+                Assert.NotNull(DocumentStore);
+                Assert.Equal(0, DocumentStore.DatabaseCommands.GetStatistics().CountOfDocuments);
+                Assert.Equal(0, DocumentStore.DatabaseCommands.GetStatistics().CountOfIndexes);
             }
 
             [Fact]
@@ -46,10 +45,10 @@ namespace WorldDomination.Raven.Client.Tests
 
                 // Assert.
                 Assert.NotNull(documentSession);
-                Assert.NotNull(documentSession.Advanced.DocumentStore);
+                Assert.NotNull(DocumentStore);
                 Assert.Equal(numberOfDocuments,
-                             documentSession.Advanced.DocumentStore.DatabaseCommands.GetStatistics().CountOfDocuments);
-                Assert.Equal(0, documentSession.Advanced.DocumentStore.DatabaseCommands.GetStatistics().CountOfIndexes);
+                    DocumentStore.DatabaseCommands.GetStatistics().CountOfDocuments);
+                Assert.Equal(0, DocumentStore.DatabaseCommands.GetStatistics().CountOfIndexes);
             }
 
             [Fact]
@@ -62,7 +61,7 @@ namespace WorldDomination.Raven.Client.Tests
                                         DataToBeSeeded.Count();
                 IndexesToExecute = new List<Type>
                 {
-                    typeof (Users_Search), 
+                    typeof (Users_Search),
                     typeof (Users_TagsSummary)
                 };
 
@@ -71,11 +70,11 @@ namespace WorldDomination.Raven.Client.Tests
 
                 // Assert.
                 Assert.NotNull(documentSession);
-                Assert.NotNull(documentSession.Advanced.DocumentStore);
+                Assert.NotNull(DocumentStore);
                 Assert.Equal(numberOfDocuments,
-                             documentSession.Advanced.DocumentStore.DatabaseCommands.GetStatistics().CountOfDocuments);
+                    DocumentStore.DatabaseCommands.GetStatistics().CountOfDocuments);
                 Assert.Equal(IndexesToExecute.Count,
-                             documentSession.Advanced.DocumentStore.DatabaseCommands.GetStatistics().CountOfIndexes);
+                    DocumentStore.DatabaseCommands.GetStatistics().CountOfIndexes);
             }
 
             [Fact(
@@ -123,10 +122,12 @@ namespace WorldDomination.Raven.Client.Tests
 
                 // Act and Assert.
                 var result = Assert.Throws<InvalidOperationException>(() =>
-                                                                      IndexesToExecute =
-                                                                      new List<Type>{typeof (Users_Search)}); 
+                    IndexesToExecute =
+                        new List<Type> {typeof (Users_Search)});
                 Assert.NotNull(result);
-                Assert.Equal("The DocumentStore has already been created and Initialized. As such, changes to the Index list will not be used. Therefore, set this collection BEFORE your first call to a DocumentSession (which in effect creates the DocumentStore if it has been created).", result.Message);
+                Assert.Equal(
+                    "The DocumentStore has already been created and Initialized. As such, changes to the IndexesToExecute list will not be used. Therefore, set this collection BEFORE your first call to a DocumentSession (which in effect creates the DocumentStore if it has been created).",
+                    result.Message);
             }
 
             [Fact]
@@ -137,10 +138,12 @@ namespace WorldDomination.Raven.Client.Tests
 
                 // Act and Assert.
                 var result = Assert.Throws<InvalidOperationException>(() =>
-                                                                      DataToBeSeeded =
-                                                                      new List<IEnumerable> {User.CreateFakeData()});
+                    DataToBeSeeded =
+                        new List<IEnumerable> {User.CreateFakeData()});
                 Assert.NotNull(result);
-                Assert.Equal("The DocumentStore has already been created and Initialized. As such, changes to the Seed data list will not be used. Therefore, set this collection BEFORE your first call to a DocumentSession (which in effect creates the DocumentStore if it has been created).", result.Message);
+                Assert.Equal(
+                    "The DocumentStore has already been created and Initialized. As such, changes to the DataToBeSeeded list will not be used. Therefore, set this collection BEFORE your first call to a DocumentSession (which in effect creates the DocumentStore if it has been created).",
+                    result.Message);
             }
 
             [Fact]
@@ -153,7 +156,9 @@ namespace WorldDomination.Raven.Client.Tests
                 var result = Assert.Throws<InvalidOperationException>(
                     () => ExistingDocumentStoreSettings = new ExistingDocumentStoreSettings("whatever"));
                 Assert.NotNull(result);
-                Assert.Equal("The DocumentStore has already been created and Initialized. As such, the ExistingDocumentStoreSettings instance cannot be used. Therefore, set this value BEFORE your first call to a AsyncDocumentSession (which in effect creates the DocumentStore pointing to your desired location).", result.Message);
+                Assert.Equal(
+                    "The DocumentStore has already been created and Initialized. As such, the ExistingDocumentStoreSettings instance cannot be used. Therefore, set this value BEFORE your first call to a AsyncDocumentSession (which in effect creates the DocumentStore pointing to your desired location).",
+                    result.Message);
             }
 
             [Fact]
@@ -161,18 +166,49 @@ namespace WorldDomination.Raven.Client.Tests
             {
                 // Arrange.
                 DocumentConvention = new DocumentConvention
-                                     {
-                                         // Will get overriden.
-                                         DefaultQueryingConsistency = ConsistencyOptions.None
-                                     };
+                {
+                    // Will get overriden.
+                    DefaultQueryingConsistency = ConsistencyOptions.None
+                };
                 // Act.
                 IAsyncDocumentSession documentSession = AsyncDocumentSession;
 
                 // Assert.
                 Assert.NotNull(documentSession);
-                Assert.NotNull(documentSession.Advanced.DocumentStore);
-                Assert.Equal(0, documentSession.Advanced.DocumentStore.DatabaseCommands.GetStatistics().CountOfDocuments);
-                Assert.Equal(0, documentSession.Advanced.DocumentStore.DatabaseCommands.GetStatistics().CountOfIndexes);
+                Assert.NotNull(DocumentStore);
+                Assert.Equal(0, DocumentStore.DatabaseCommands.GetStatistics().CountOfDocuments);
+                Assert.Equal(0, DocumentStore.DatabaseCommands.GetStatistics().CountOfIndexes);
+            }
+
+            [Fact]
+            public void GivenSomeSeedDataAndNoIndexesButOneResultTransformer_InitializeWithDefaults_WorksWithSomeDataAndNoIndexes()
+            {
+                // Arrange.
+                DataToBeSeeded = User.CreateFakeData().ToList();
+                // NOTE: Each collection has an identity counter (it is assumed).
+                int numberOfDocuments = DataToBeSeeded
+                    .Cast<IList>()
+                    .Sum(collection => collection.Count) + DataToBeSeeded.Count();
+
+                IndexesToExecute = new List<Type>
+                {
+                    typeof (User_SearchTransformer)
+                };
+
+                // Act.
+                IAsyncDocumentSession documentSession = AsyncDocumentSession;
+
+                new User_SearchTransformer().Execute(DocumentStore);
+
+                // Assert.
+                Assert.NotNull(documentSession);
+                Assert.NotNull(DocumentStore);
+                Assert.Equal(numberOfDocuments,
+                    DocumentStore.DatabaseCommands.GetStatistics().CountOfDocuments);
+
+                // There's no way to find out how many result tranformers we have.
+                Assert.Equal(0,
+                    DocumentStore.DatabaseCommands.GetStatistics().CountOfIndexes);
             }
         }
     }

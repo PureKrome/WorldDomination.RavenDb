@@ -30,33 +30,8 @@ namespace WorldDomination.Raven.Client
             // Default initializtion;
             documentStore.Initialize();
 
-            // Index initialisation.
-            if (indexesToExecute != null)
-            {
-                Trace.TraceInformation("Executing indexes that have been manually provided ...");
-                Type[] indexes = (from type in indexesToExecute
-                                  where typeof (AbstractIndexCreationTask).IsAssignableFrom(type)
-                                  select type).ToArray();
-                if (indexes.Length != indexesToExecute.Count)
-                {
-                    throw new InvalidOperationException(
-                        "One or more of the provided indexes are not assignable from an AbstractIndexCreationTask. Please confirm that all the indexes provided are assignable from an AbstractIndexCreationTask.");
-                }
-
-                IndexCreation.CreateIndexes(new CompositionContainer(new TypeCatalog(indexes)), documentStore);
-                Trace.TraceInformation("    Done!");
-            }
-            else if (assemblyToScanForIndexes != null)
-            {
-                Trace.TraceInformation("Scanning assemblies for indexes that might exist within them ...");
-                IndexCreation.CreateIndexes(assemblyToScanForIndexes.Assembly, documentStore);
-                Trace.TraceInformation("    Done!");
-            }
-            else
-            {
-                Trace.TraceWarning(
-                    "!!WARNING!! : No manual indexes where provided and not asked to scan any assemblies for indexes. That's fine .. but we're just telling you that this -might- be a problem.");
-            }
+            // Static indexes or ResultTransformers.
+            CreateIndexes(indexesToExecute, assemblyToScanForIndexes, documentStore);
 
             // Create our Seed Data (if provided).
             if (seedData != null)
@@ -121,6 +96,40 @@ namespace WorldDomination.Raven.Client
             }
         }
 
+        private static void CreateIndexes(ICollection<Type> indexesToExecute,
+            Type assemblyToScanForIndexes,
+            IDocumentStore documentStore)
+        {
+            // Index initialisation.
+            if (indexesToExecute != null)
+            {
+                Trace.TraceInformation("Executing indexes/result transformers that have been manually provided ...");
+                Type[] indexes = (from type in indexesToExecute
+                    where (typeof (AbstractIndexCreationTask).IsAssignableFrom(type) ||
+                           typeof (AbstractTransformerCreationTask).IsAssignableFrom(type))
+                    select type).ToArray();
+                if (indexes.Length != indexesToExecute.Count)
+                {
+                    throw new InvalidOperationException(
+                        "One or more of the provided indexes/result transformers are not assignable from an AbstractIndexCreationTask or an AbstractTransformerCreationTask. Please confirm that all the indexes provided are assignable from an AbstractIndexCreationTask or an AbstractTransformerCreationTask.");
+                }
+
+                IndexCreation.CreateIndexes(new CompositionContainer(new TypeCatalog(indexes)), documentStore);
+                Trace.TraceInformation("    Done!");
+            }
+            else if (assemblyToScanForIndexes != null)
+            {
+                Trace.TraceInformation("Scanning assemblies for indexes or result transformers that might exist within them ...");
+                IndexCreation.CreateIndexes(assemblyToScanForIndexes.Assembly, documentStore);
+                Trace.TraceInformation("    Done!");
+            }
+            else
+            {
+                Trace.TraceWarning(
+                    "!!WARNING!! : No manual indexes where provided and not asked to scan any assemblies for indexes. That's fine .. but we're just telling you that this -might- be a problem.");
+            }
+        }
+
         private static void WaitForStaleIndexesToComplete(this IDocumentStore documentStore)
         {
             while (documentStore.DatabaseCommands.GetStatistics().StaleIndexes.Length != 0)
@@ -167,7 +176,7 @@ namespace WorldDomination.Raven.Client
                         }
                         documentSession.Store(entity);
                     }
-                    Trace.TraceInformation(string.Format("   --- {0} {1}", count, entityName));
+                    Trace.TraceInformation("   --- {0} {1}", count, entityName);
                 }
                 Trace.TraceInformation("   Done!");
 
