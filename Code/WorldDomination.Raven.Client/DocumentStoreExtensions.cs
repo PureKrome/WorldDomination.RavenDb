@@ -24,14 +24,14 @@ namespace WorldDomination.Raven.Client
         public static void InitializeWithDefaults(this IDocumentStore documentStore,
                                                   IEnumerable<IEnumerable> seedData = null,
                                                   ICollection<Type> indexesToExecute = null,
-                                                  Type assemblyToScanForIndexes = null,
+                                                  ICollection<Type> assembliesToScanForIndexes = null,
                                                   bool areDocumentStoreErrorsTreatedAsWarnings = false)
         {
             // Default initializtion;
             documentStore.Initialize();
 
             // Static indexes or ResultTransformers.
-            CreateIndexes(indexesToExecute, assemblyToScanForIndexes, documentStore);
+            CreateIndexes(indexesToExecute, assembliesToScanForIndexes, documentStore);
 
             // Create our Seed Data (if provided).
             if (seedData != null)
@@ -97,13 +97,15 @@ namespace WorldDomination.Raven.Client
         }
 
         private static void CreateIndexes(ICollection<Type> indexesToExecute,
-            Type assemblyToScanForIndexes,
+            ICollection<Type> assembliesToScanForIndexes,
             IDocumentStore documentStore)
         {
             // Index initialisation.
             if (indexesToExecute != null)
             {
-                Trace.TraceInformation("Executing indexes/result transformers that have been manually provided ...");
+                Trace.TraceInformation("Executing {0} index{1}/result transformer{1} that have been manually provided ...",
+                    indexesToExecute.Count,
+                    indexesToExecute.Count == 1 ? string.Empty : "s");
                 Type[] indexes = (from type in indexesToExecute
                     where (typeof (AbstractIndexCreationTask).IsAssignableFrom(type) ||
                            typeof (AbstractTransformerCreationTask).IsAssignableFrom(type))
@@ -117,10 +119,16 @@ namespace WorldDomination.Raven.Client
                 IndexCreation.CreateIndexes(new CompositionContainer(new TypeCatalog(indexes)), documentStore);
                 Trace.TraceInformation("    Done!");
             }
-            else if (assemblyToScanForIndexes != null)
+            else if (assembliesToScanForIndexes != null)
             {
-                Trace.TraceInformation("Scanning assemblies for indexes or result transformers that might exist within them ...");
-                IndexCreation.CreateIndexes(assemblyToScanForIndexes.Assembly, documentStore);
+                Trace.TraceInformation("Scanning {0} assembl{1} for indexes or result transformers that might exist within them ...",
+                    assembliesToScanForIndexes.Count,
+                    assembliesToScanForIndexes.Count == 1 ? "y" : "ies");
+
+                foreach (var assembly in assembliesToScanForIndexes.Select(x => x.Assembly))
+                {
+                    IndexCreation.CreateIndexes(assembly, documentStore);
+                }
                 Trace.TraceInformation("    Done!");
             }
             else
