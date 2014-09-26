@@ -8,6 +8,9 @@ namespace WorldDomination.Raven.Tests.Helpers
     /// <remarks>This is a vary rare case of debugging. Generally, you do not create an instance of this class and just use the embedded DocumentStore for in memory tests. Sometimes, you might want to see what data has actually been stored because there's something going wrong and you can't seem to programmatically debug the issue. Therefore, you can use a normal DocumentStore instance.</remarks>
     public class ExistingDocumentStoreSettings
     {
+        public const string DefaultDocumentStoreUrl = "http://localhost:8080";
+        public const string DefaultDatabaseName = "UnitTests";
+
         /// <summary>
         /// A new instance of an ExistingDocumentStoreSettings, which is used to connect to a real database.
         /// </summary>
@@ -15,17 +18,17 @@ namespace WorldDomination.Raven.Tests.Helpers
         /// <param name="defaultDatabase">string: database tenant name.</param>
         /// <remarks>If a DocumentStore Url is not provided, then we create/connect to the url: http://localhost:8080.<br/>
         ///          If a Default Database is not provided, then the we create/connect to a database tenant called 'UnitTests'.</remarks>
-        public ExistingDocumentStoreSettings(string documentStoreUrl = null,
-            string defaultDatabase = null)
+        public ExistingDocumentStoreSettings(string documentStoreUrl = DefaultDocumentStoreUrl,
+            string defaultDatabase = DefaultDatabaseName)
         {
             if (string.IsNullOrWhiteSpace(documentStoreUrl))
             {
-                documentStoreUrl = "http://localhost:8080";
+                documentStoreUrl = DefaultDocumentStoreUrl;
             }
 
             if (string.IsNullOrWhiteSpace(defaultDatabase))
             {
-                defaultDatabase = "UnitTests";
+                defaultDatabase = DefaultDatabaseName;
             }
 
             DocumentStoreUrl = documentStoreUrl;
@@ -41,6 +44,6 @@ namespace WorldDomination.Raven.Tests.Helpers
         /// <summary>
         /// Database tenant name to connect to.
         /// </summary>
-        public string DefaultDatabase { get; set; }
+        public string DefaultDatabase { get; private set; }
     }
 }
