@@ -187,8 +187,7 @@ namespace WorldDomination.Raven.Tests.Helpers
             // Do we have the key?
             if (!_asyncDocumentSessions.ContainsKey(key))
             {
-                Trace.TraceInformation("Async Document Session Key [" + key +
-                                       "] doesn't exist. Creating a new dictionary item.");
+                Trace.TraceInformation("Async Document Session Key [{0}] doesn't exist. Creating a new dictionary item.", key);
                 _asyncDocumentSessions.Add(key, DocumentStore.OpenAsyncSession());
             }
 

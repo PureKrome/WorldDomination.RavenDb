@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace WorldDomination.Raven.Tests.Helpers
+﻿namespace WorldDomination.Raven.Tests.Helpers
 {
     /// <summary>
     /// Extra settings required when trying to debug against a real database.

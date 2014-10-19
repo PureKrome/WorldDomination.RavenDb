@@ -19,13 +19,13 @@ namespace WorldDomination.Raven.Client
         /// <param name="documentStore">The Raven document store.</param>
         /// <param name="seedData">Optional: A collection of data which will be 'seeded' into the new document store.</param>
         /// <param name="indexesToExecute">Optional: Any index(es) which should be executed during initialization. They need to be assignable from an AbstractIndexCreationTask.</param>
-        /// <param name="assemblyToScanForIndexes">Optional: The assembly where the index(es) are located.</param>
+        /// <param name="assembliesToScanForIndexes">Optional: The assembly where the index(es) are located.</param>
         /// <param name="areDocumentStoreErrorsTreatedAsWarnings">Optional: If there are any server errors, do we downgrade them as warnings or keep them as errors, which stops further processing of the document store.</param>
         public static void InitializeWithDefaults(this IDocumentStore documentStore,
-                                                  IEnumerable<IEnumerable> seedData = null,
-                                                  ICollection<Type> indexesToExecute = null,
-                                                  ICollection<Type> assembliesToScanForIndexes = null,
-                                                  bool areDocumentStoreErrorsTreatedAsWarnings = false)
+            IEnumerable<IEnumerable> seedData = null,
+            ICollection<Type> indexesToExecute = null,
+            ICollection<Type> assembliesToScanForIndexes = null,
+            bool areDocumentStoreErrorsTreatedAsWarnings = false)
         {
             // Default initializtion;
             documentStore.Initialize();
@@ -52,33 +52,34 @@ namespace WorldDomination.Raven.Client
         /// <param name="documentStore">The Raven document store.</param>
         /// <param name="areDocumentStoreErrorsTreatedAsWarnings">Optional: If there are any server errors, do we downgrade them as warnings or keep them as errors, which stops further processing of the document store.</param>
         public static void AssertDocumentStoreErrors(this IDocumentStore documentStore,
-                                                     bool areDocumentStoreErrorsTreatedAsWarnings = false)
+            bool areDocumentStoreErrorsTreatedAsWarnings = false)
         {
             if (documentStore == null)
             {
                 throw new ArgumentNullException("documentStore");
             }
 
-            ServerError[] errors = documentStore.DatabaseCommands.GetStatistics().Errors;
-            if (errors == null || errors.Length <= 0)
+            var errors = documentStore.DatabaseCommands.GetStatistics().Errors;
+            if (errors == null ||
+                errors.Length <= 0)
             {
                 return;
             }
 
             // We have some Errors. NOT. GOOD. :(
-            string errorMessage = "No server errors supplied.";
+            var errorMessage = "No server errors supplied.";
             foreach (ServerError serverError in errors)
             {
                 errorMessage = string.Format("Document: {0}; Index: {1}; Error: {2}",
-                                             string.IsNullOrEmpty(serverError.Document)
-                                                 ? "No Document Id"
-                                                 : serverError.Document,
-                                             string.IsNullOrEmpty(serverError.Index)
-                                                 ? "No Index"
-                                                 : serverError.Index,
-                                             string.IsNullOrEmpty(serverError.Error)
-                                                 ? "No Error message .. err??"
-                                                 : serverError.Error);
+                    string.IsNullOrEmpty(serverError.Document)
+                        ? "No Document Id"
+                        : serverError.Document,
+                    string.IsNullOrEmpty(serverError.Index)
+                        ? "No Index"
+                        : serverError.Index,
+                    string.IsNullOrEmpty(serverError.Error)
+                        ? "No Error message .. err??"
+                        : serverError.Error);
             }
 
             if (areDocumentStoreErrorsTreatedAsWarnings)
@@ -103,10 +104,11 @@ namespace WorldDomination.Raven.Client
             // Index initialisation.
             if (indexesToExecute != null)
             {
-                Trace.TraceInformation("Executing {0} index{1}/result transformer{1} that have been manually provided ...",
+                Trace.TraceInformation(
+                    "Executing {0} index{1}/result transformer{1} that have been manually provided ...",
                     indexesToExecute.Count,
                     indexesToExecute.Count == 1 ? string.Empty : "s");
-                Type[] indexes = (from type in indexesToExecute
+                var indexes = (from type in indexesToExecute
                     where (typeof (AbstractIndexCreationTask).IsAssignableFrom(type) ||
                            typeof (AbstractTransformerCreationTask).IsAssignableFrom(type))
                     select type).ToArray();
@@ -121,7 +123,8 @@ namespace WorldDomination.Raven.Client
             }
             else if (assembliesToScanForIndexes != null)
             {
-                Trace.TraceInformation("Scanning {0} assembl{1} for indexes or result transformers that might exist within them ...",
+                Trace.TraceInformation(
+                    "Scanning {0} assembl{1} for indexes or result transformers that might exist within them ...",
                     assembliesToScanForIndexes.Count,
                     assembliesToScanForIndexes.Count == 1 ? "y" : "ies");
 
@@ -172,8 +175,8 @@ namespace WorldDomination.Raven.Client
                 Trace.TraceInformation("Seeding Data :-");
                 foreach (IEnumerable collection in seedData)
                 {
-                    int count = 0;
-                    string entityName = "Unknown";
+                    var count = 0;
+                    var entityName = "Unknown";
 
                     foreach (object entity in collection)
                     {
@@ -203,20 +206,30 @@ namespace WorldDomination.Raven.Client
                 throw new ArgumentNullException("documentStore");
             }
 
+            var statistics = documentStore.DatabaseCommands.GetStatistics();
+
             Trace.TraceInformation("+-------------------------------------------------------------+");
             Trace.TraceInformation("+  RavenDb Initialization Report                              +");
             Trace.TraceInformation("+  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^                              +");
             Trace.TraceInformation("+  o) Tenant Id: {0}         +",
-                                   documentStore.DatabaseCommands.GetStatistics().DatabaseId);
-            Trace.TraceInformation(string.Format("+  o) Number of Documents: {0, -35}+",
-                                                 documentStore.DatabaseCommands.GetStatistics().CountOfDocuments));
-            Trace.TraceInformation(string.Format("+  o) Number of Indexes: {0,-37}+",
-                                                 documentStore.DatabaseCommands.GetStatistics().CountOfIndexes));
-            Trace.TraceInformation(string.Format("+  o) Number of ~Stale Indexes: {0,-30}+",
-                                                 documentStore.DatabaseCommands.GetStatistics().StaleIndexes == null
-                                                     ? 0
-                                                     : documentStore.DatabaseCommands.GetStatistics()
-                                                                    .StaleIndexes.Count()));
+                statistics.DatabaseId);
+            Trace.TraceInformation("+  o) Number of Documents: {0, -35}+",
+                statistics.CountOfDocuments);
+            Trace.TraceInformation("+  o) Number of Indexes: {0,-37}+",
+                statistics.CountOfIndexes);
+            Trace.TraceInformation("+  o) Number of ~Stale Indexes: {0,-30}+",
+                statistics.StaleIndexes == null
+                    ? 0
+                    : statistics.StaleIndexes.Count());
+
+            // TODO: Result transformer report.
+            //       This was added to RavenDb -after- this current version, so we need to wait until
+            //       the assembly is updated and released to NuGet.
+            //Trace.TraceInformation("+  o) Number of Result Transformers: {0,-30}+",
+            //    statistics.ResultTransformers == null
+            //        ? 0
+            //        : statistics.ResultTransformers.Count());
+
             Trace.TraceInformation("+-------------------------------------------------------------+");
         }
     }
