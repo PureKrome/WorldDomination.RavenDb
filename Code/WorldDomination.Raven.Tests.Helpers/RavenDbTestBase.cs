@@ -97,7 +97,7 @@ namespace WorldDomination.Raven.Tests.Helpers
                     return _documentStore;
                 }
 
-                DocumentStore documentStore;
+                IDocumentStore documentStore;
 
                 if (ExistingDocumentStoreSettings == null ||
                     string.IsNullOrWhiteSpace(ExistingDocumentStoreSettings.DocumentStoreUrl))
@@ -109,6 +109,7 @@ namespace WorldDomination.Raven.Tests.Helpers
                     documentStore = new EmbeddableDocumentStore
                     {
                         RunInMemory = true,
+                        Conventions = DocumentConvention ?? new DocumentConvention()
                     };
                 }
                 else
@@ -120,27 +121,31 @@ namespace WorldDomination.Raven.Tests.Helpers
                     documentStore = new DocumentStore
                     {
                         Url = ExistingDocumentStoreSettings.DocumentStoreUrl,
-                        DefaultDatabase = ExistingDocumentStoreSettings.DefaultDatabase
+                        DefaultDatabase = ExistingDocumentStoreSettings.DefaultDatabase,
+                        Conventions = DocumentConvention ?? new DocumentConvention()
                     };
                 }
 
                 if (DocumentConvention != null)
                 {
+                    // A user has given us a DocumentConvention to use. To be safe (we are testing after all)
                     Trace.TraceInformation(
                         "* Using the provided DocumentStore DocumentConvention object :) Forcing the default DefaultQueryingConsistency to be ConsistencyOptions.AlwaysWaitForNonStaleResultsAsOfLastWrite.");
-                    DocumentConvention.DefaultQueryingConsistency =
-                        ConsistencyOptions.AlwaysWaitForNonStaleResultsAsOfLastWrite;
-                    documentStore.Conventions = DocumentConvention;
+                    //DocumentConvention.DefaultQueryingConsistency =
+                    //    ConsistencyOptions.AlwaysWaitForNonStaleResultsAsOfLastWrite;
+                    //documentStore.Conventions. = DocumentConvention;
                 }
                 else
                 {
                     Trace.TraceInformation("Setting DocumentStore Conventions: ConsistencyOptions.QueryYourWrites.");
-                    documentStore.Conventions = new DocumentConvention
-                    {
-                        DefaultQueryingConsistency =
-                            ConsistencyOptions.AlwaysWaitForNonStaleResultsAsOfLastWrite
-                    };
+                    //documentStore.Conventions = new DocumentConvention
+                    //{
+                    //    DefaultQueryingConsistency =
+                    //        ConsistencyOptions.AlwaysWaitForNonStaleResultsAsOfLastWrite
+                    //};
                 }
+
+                documentStore.Conventions.DefaultQueryingConsistency = ConsistencyOptions.AlwaysWaitForNonStaleResultsAsOfLastWrite;
 
                 Trace.TraceInformation("Initializing data with Defaults :-");
                 documentStore.InitializeWithDefaults(DataToBeSeeded, IndexesToExecute);
@@ -149,7 +154,7 @@ namespace WorldDomination.Raven.Tests.Helpers
                 // Force query's to wait for index's to catch up. Unit Testing only :P
                 Trace.TraceInformation(
                     "Forcing queries to always wait until they are not stale. aka. It's like => WaitForNonStaleResultsAsOfLastWrite.");
-                documentStore.RegisterListener(new NoStaleQueriesListener());
+                documentStore.Listeners.RegisterListener(new NoStaleQueriesListener());
 
                 Trace.TraceInformation("** Finished initializing the Document Store.");
                 Trace.TraceInformation("    ** Number of Documents: " +

@@ -12,13 +12,13 @@ namespace WorldDomination.Raven.Client.Tests.Entities
                 select new
                 {
                     TagName = tag,
-                    Count = 0
+                    Count = 1
                 };
 
             Reduce = results => from result in results
-                group result by result.Tag
+                group result by result.TagName
                 into g
-                select new
+                select new ReduceResult
                 {
                     TagName = g.Key,
                     Count = g.Sum(x => x.Count)
@@ -27,7 +27,7 @@ namespace WorldDomination.Raven.Client.Tests.Entities
 
         public class ReduceResult
         {
-            public string Tag { get; set; }
+            public string TagName { get; set; }
             public int Count { get; set; }
         }
     }

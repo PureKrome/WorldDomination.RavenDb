@@ -68,15 +68,15 @@ namespace WorldDomination.Raven.Client
 
             // We have some Errors. NOT. GOOD. :(
             var errorMessage = "No server errors supplied.";
-            foreach (ServerError serverError in errors)
+            foreach (var serverError in errors)
             {
                 errorMessage = string.Format("Document: {0}; Index: {1}; Error: {2}",
                     string.IsNullOrEmpty(serverError.Document)
                         ? "No Document Id"
                         : serverError.Document,
-                    string.IsNullOrEmpty(serverError.Index)
+                    string.IsNullOrEmpty(serverError.IndexName)
                         ? "No Index"
-                        : serverError.Index,
+                        : serverError.IndexName,
                     string.IsNullOrEmpty(serverError.Error)
                         ? "No Error message .. err??"
                         : serverError.Error);

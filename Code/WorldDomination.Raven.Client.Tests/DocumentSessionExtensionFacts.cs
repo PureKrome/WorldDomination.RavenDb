@@ -178,6 +178,7 @@ namespace WorldDomination.Raven.Client.Tests
                 Assert.NotNull(DocumentStore);
                 Assert.Equal(0, DocumentStore.DatabaseCommands.GetStatistics().CountOfDocuments);
                 Assert.Equal(0, DocumentStore.DatabaseCommands.GetStatistics().CountOfIndexes);
+                Assert.Equal(ConsistencyOptions.AlwaysWaitForNonStaleResultsAsOfLastWrite, DocumentStore.Conventions.DefaultQueryingConsistency);
             }
 
             [Fact]
