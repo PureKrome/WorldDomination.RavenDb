@@ -12,12 +12,18 @@ namespace WorldDomination.Raven.Tests.Helpers
 {
     public abstract class RavenDbTestBase : IDisposable
     {
+        private IDocumentStore _documentStore;
+        private readonly object _documentStoreLock = new object();
         private const string DefaultSessionKey = "DefaultSession";
         private IDictionary<string, IAsyncDocumentSession> _asyncDocumentSessions;
         private IList<IEnumerable> _dataToBeSeeded;
-        private IDocumentStore _documentStore;
         private ExistingDocumentStoreSettings _existingDocumentStoreSettings;
         private IList<Type> _indexesToExecute;
+
+        protected RavenDbTestBase()
+        {
+            AlwaysWaitForNonStaleResultsAsOfLastWrite = true;
+        }
 
         /// <summary>
         /// A collection of data, which will be 'seeded' during the document store initialization.
@@ -85,6 +91,8 @@ namespace WorldDomination.Raven.Tests.Helpers
         /// </summary>
         protected DocumentConvention DocumentConvention { get; set; }
 
+        protected bool AlwaysWaitForNonStaleResultsAsOfLastWrite { get; set; }
+
         /// <summary>
         /// The main Document Store where all your lovely data will live and smile.
         /// </summary>
@@ -92,78 +100,16 @@ namespace WorldDomination.Raven.Tests.Helpers
         {
             get
             {
-                if (_documentStore != null)
+                if (_documentStore == null)
                 {
-                    return _documentStore;
-                }
-
-                IDocumentStore documentStore;
-
-                if (ExistingDocumentStoreSettings == null ||
-                    string.IsNullOrWhiteSpace(ExistingDocumentStoreSettings.DocumentStoreUrl))
-                {
-                    Trace.TraceInformation("Creating a new Embedded DocumentStore in **RAM**.");
-                    Trace.TraceInformation(
-                        "** NOTE: If you wish to target an existing document store, please set the 'DocumentStoreUrl' property.");
-
-                    documentStore = new EmbeddableDocumentStore
+                    lock (_documentStoreLock)
                     {
-                        RunInMemory = true,
-                        Conventions = DocumentConvention ?? new DocumentConvention()
-                    };
+                        if (_documentStore == null)
+                        {
+                            _documentStore = CreateDocumentStore();
+                        }
+                    }
                 }
-                else
-                {
-                    Trace.TraceInformation(
-                        "The DocumentStore Url [{0}] was provided. Creating a new (normal) DocumentStore with a Tenant named [{1}].",
-                        ExistingDocumentStoreSettings.DocumentStoreUrl,
-                        ExistingDocumentStoreSettings.DefaultDatabase);
-                    documentStore = new DocumentStore
-                    {
-                        Url = ExistingDocumentStoreSettings.DocumentStoreUrl,
-                        DefaultDatabase = ExistingDocumentStoreSettings.DefaultDatabase,
-                        Conventions = DocumentConvention ?? new DocumentConvention()
-                    };
-                }
-
-                if (DocumentConvention != null)
-                {
-                    // A user has given us a DocumentConvention to use. To be safe (we are testing after all)
-                    Trace.TraceInformation(
-                        "* Using the provided DocumentStore DocumentConvention object :) Forcing the default DefaultQueryingConsistency to be ConsistencyOptions.AlwaysWaitForNonStaleResultsAsOfLastWrite.");
-                    //DocumentConvention.DefaultQueryingConsistency =
-                    //    ConsistencyOptions.AlwaysWaitForNonStaleResultsAsOfLastWrite;
-                    //documentStore.Conventions. = DocumentConvention;
-                }
-                else
-                {
-                    Trace.TraceInformation("Setting DocumentStore Conventions: ConsistencyOptions.QueryYourWrites.");
-                    //documentStore.Conventions = new DocumentConvention
-                    //{
-                    //    DefaultQueryingConsistency =
-                    //        ConsistencyOptions.AlwaysWaitForNonStaleResultsAsOfLastWrite
-                    //};
-                }
-
-                documentStore.Conventions.DefaultQueryingConsistency = ConsistencyOptions.AlwaysWaitForNonStaleResultsAsOfLastWrite;
-
-                Trace.TraceInformation("Initializing data with Defaults :-");
-                documentStore.InitializeWithDefaults(DataToBeSeeded, IndexesToExecute);
-                Trace.TraceInformation("   Done!");
-
-                // Force query's to wait for index's to catch up. Unit Testing only :P
-                Trace.TraceInformation(
-                    "Forcing queries to always wait until they are not stale. aka. It's like => WaitForNonStaleResultsAsOfLastWrite.");
-                documentStore.Listeners.RegisterListener(new NoStaleQueriesListener());
-
-                Trace.TraceInformation("** Finished initializing the Document Store.");
-                Trace.TraceInformation("    ** Number of Documents: " +
-                                       documentStore.DatabaseCommands.GetStatistics().CountOfDocuments);
-                Trace.TraceInformation("    ** Number of Indexes: " +
-                                       documentStore.DatabaseCommands.GetStatistics().CountOfIndexes);
-
-                _documentStore = documentStore;
-
                 return _documentStore;
             }
         }
@@ -208,14 +154,25 @@ namespace WorldDomination.Raven.Tests.Helpers
         {
             Trace.TraceInformation(
                 "Disposing of RavenDbTest class. This will clean up any Document Sessions and the Document Store.");
-            if (DocumentStore.WasDisposed)
+
+            // NOTE: It's possible that an error occured while trying to create a document store.
+            //       AS SUCH, the document store might not have been created correcfly.
+            //       SO - please do NOT reference the property .. but the backing private member.
+
+            if (_documentStore == null)
+            {
+                Trace.TraceInformation(" .... No RavenDb DocumentStore created - nothing to dispose of.");
+                return;
+            }
+
+            if (_documentStore.WasDisposed)
             {
                 return;
             }
 
             // Assert for any errors.
             Trace.TraceInformation("Asserting for any DocumentStore errors.");
-            DocumentStore.AssertDocumentStoreErrors();
+            _documentStore.AssertDocumentStoreErrors();
 
             // Clean up.
             if (_asyncDocumentSessions != null)
@@ -230,11 +187,73 @@ namespace WorldDomination.Raven.Tests.Helpers
             }
 
             Trace.TraceInformation("Disposing the Document Store ... ");
-            DocumentStore.Dispose();
+            _documentStore.Dispose();
             Trace.TraceInformation("Done!");
         }
 
         #endregion
+
+        private IDocumentStore CreateDocumentStore()
+        {
+            
+            IDocumentStore documentStore;
+
+            if (ExistingDocumentStoreSettings == null ||
+                string.IsNullOrWhiteSpace(ExistingDocumentStoreSettings.DocumentStoreUrl))
+            {
+                Trace.TraceInformation("Creating a new Embedded DocumentStore in **RAM**.");
+                Trace.TraceInformation(
+                    "** NOTE: If you wish to target an existing document store, please set the 'DocumentStoreUrl' property.");
+
+                documentStore = new EmbeddableDocumentStore
+                {
+                    RunInMemory = true,
+                    Conventions = DocumentConvention ?? new DocumentConvention()
+                };
+            }
+            else
+            {
+                Trace.TraceInformation(
+                    "The DocumentStore Url [{0}] was provided. Creating a new (normal) DocumentStore with a Tenant named [{1}].",
+                    ExistingDocumentStoreSettings.DocumentStoreUrl,
+                    ExistingDocumentStoreSettings.DefaultDatabase);
+                documentStore = new DocumentStore
+                {
+                    Url = ExistingDocumentStoreSettings.DocumentStoreUrl,
+                    DefaultDatabase = ExistingDocumentStoreSettings.DefaultDatabase,
+                    Conventions = DocumentConvention ?? new DocumentConvention()
+                };
+            }
+
+            if (AlwaysWaitForNonStaleResultsAsOfLastWrite)
+            {
+                Trace.TraceInformation(
+                    "Setting DocumentStore Conventions: ConsistencyOptions.AlwaysWaitForNonStaleResultsAsOfLastWrite. This means that the unit test will *always* wait for the index to complete before querying against it.");
+                documentStore.Conventions.DefaultQueryingConsistency = ConsistencyOptions.AlwaysWaitForNonStaleResultsAsOfLastWrite;
+            }
+            else
+            {
+                Trace.TraceInformation(
+                    "** NOTE: Not setting the ConsistencyOptions.AlwaysWaitForNonStaleResultsAsOfLastWrite option (as requested by you). This is generally when you are *streaming* some results from RavenDb.");
+            }
+
+            Trace.TraceInformation("Initializing data with Defaults :-");
+            documentStore.InitializeWithDefaults(DataToBeSeeded, IndexesToExecute);
+            Trace.TraceInformation("   Done!");
+
+            // Force query's to wait for index's to catch up. Unit Testing only :P
+            Trace.TraceInformation(
+                "Forcing queries to always wait until they are not stale. aka. It's like => WaitForNonStaleResultsAsOfLastWrite.");
+            documentStore.Listeners.RegisterListener(new NoStaleQueriesListener());
+
+            Trace.TraceInformation("** Finished initializing the Document Store.");
+            Trace.TraceInformation("    ** Number of Documents: " +
+                                   documentStore.DatabaseCommands.GetStatistics().CountOfDocuments);
+            Trace.TraceInformation("    ** Number of Indexes: " +
+                                   documentStore.DatabaseCommands.GetStatistics().CountOfIndexes);
+
+            return documentStore;
+        }
 
         private void EnsureDocumentStoreHasNotBeenInitialized(string listName)
         {
