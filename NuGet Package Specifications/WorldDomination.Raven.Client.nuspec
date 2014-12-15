@@ -2,18 +2,18 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
     <metadata>
         <id>WorldDomination.Raven.Client</id>
-        <version>0.11.0</version>
-        <title>WorldDomination.Raven.Client (RavenDb 2.5)</title>
+        <version>1.0.0</version>
+        <title>WorldDomination.Raven.Client</title>
         <authors>Pure Krome</authors>
         <owners>Pure Krome</owners>
         <projectUrl>https://github.com/PureKrome/WorldDomination.Raven</projectUrl>
         <iconUrl>http://i.imgur.com/bR4Yf.jpg</iconUrl>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
-        <description>### RavenDb Client power tools
+        <description>### RavenDb Client power tools for RavenDb 3.0
 - Powerful InitializeWithDefaults(..) method (to replace the Initialize() method).
 - Can seed data.
 - Can create indexes by list or assemblies.
-- Asserts when an the Database has an error.
+- Can throws an exception when the Database has an error (Asserting for errors).
 
 ------------------------------------------------
       
@@ -27,11 +27,8 @@ This library reduces the code required to take advantage of the power found in R
         <language>en-au</language>
         <tags>raven ravendb magical unicorn magicalunicorn worldomination worlddomination world-domination</tags>
         <dependencies>
-            <dependency id="RavenDB.Client" version="2.5.2700" />
+            <dependency id="RavenDB.Client" version="[3.0.0, 4.0.0)" />
         </dependencies>
     </metadata>
-    <files>
-        <file src="..\Code\WorldDomination.Raven.Client-4.0\bin\Release\WorldDomination.Raven.Client.dll" target="lib\net40\WorldDomination.Raven.Client.dll" />
-        <file src="..\Code\WorldDomination.Raven.Client\bin\Release\WorldDomination.Raven.Client.dll" target="lib\net45\WorldDomination.Raven.Client.dll" />
-    </files>
+    <files />
 </package>
