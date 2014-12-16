@@ -3,7 +3,7 @@
     <metadata>
         <id>WorldDomination.Raven.Tests.Helpers</id>
         <version>1.0.0</version>
-        <title>WorldDomination.Raven.Tests.Helpers (RavenDb 2.5)</title>
+        <title>WorldDomination.Raven.Tests.Helpers</title>
         <authors>Pure Krome</authors>
         <owners>Pure Krome</owners>
         <projectUrl>https://github.com/PureKrome/WorldDomination.Raven</projectUrl>
@@ -33,7 +33,6 @@ By inheriting from the RaveDbTestBase class, most of this verbose code is now do
         </dependencies>
     </metadata>
     <files>
-        <file src="..\Code\WorldDomination.Raven.Tests.Helpers-4.0\bin\Release\WorldDomination.Raven.Tests.Helpers.dll" target="lib\net40\WorldDomination.Raven.Tests.Helpers.dll" />
-        <file src="..\Code\WorldDomination.Raven.Tests.Helpers\bin\Release\WorldDomination.Raven.Tests.Helpers.dll" target="lib\net45\WorldDomination.Raven.Tests.Helpers.dll" />
+        <file src="..\Code\WorldDomination.Raven.Tests.Helpers\bin\Release\WorldDomination.Raven.Tests.Helpers.dll" target="lib\net451\WorldDomination.Raven.Tests.Helpers.dll" />
     </files>
 </package>

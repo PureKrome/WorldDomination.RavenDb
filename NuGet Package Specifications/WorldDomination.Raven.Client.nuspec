@@ -30,5 +30,7 @@ This library reduces the code required to take advantage of the power found in R
             <dependency id="RavenDB.Client" version="[3.0.0, 4.0.0)" />
         </dependencies>
     </metadata>
-    <files />
+    <files>
+        <file src="..\Code\WorldDomination.Raven.Client\bin\Release\WorldDomination.Raven.Client.dll" target="lib\net451\WorldDomination.Raven.Client.dll" />
+    </files>
 </package>
