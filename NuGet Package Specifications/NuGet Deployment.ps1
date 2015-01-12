@@ -2,7 +2,7 @@
 
 ############################################################################
 ###                                                                      ###
-###                       NUGET  BUILD and PACKAGE                       ###
+###                    NUGET  PACKAGE and PUBLISH                        ###
 ###                                                                      ###
 ############################################################################
 
@@ -25,19 +25,21 @@ function DisplayCommandLineArgs()
     "    => source: $source"
     "    => destination: $destination"
     "    => nuget: $nuget"
+    "    => api key: $apiKey"
 
     ""
-    "eg. build.ps1 -version 0.1-alpha"
-    "eg. build.ps1 -version 0.1-alpha -destination C:\temp\TempNuGetPackages"
-    "eg. build.ps1 -version 0.1-alpha -source ../nugetspecs/ -destination C:\temp\TempNuGetPackages"
-    "eg. build.ps1 -version 0.1-alpha -nuget c:\temp\nuget.exe"
+    "eg. NuGetPackageAndPublish.ps1 -version 0.1-alpha"
+    "eg. NuGetPackageAndPublish.ps1 -version 0.1-alpha -destination C:\temp\TempNuGetPackages"
+    "eg. NuGetPackageAndPublish.ps1 -version 0.1-alpha -source ../nugetspecs/ -destination C:\temp\TempNuGetPackages"
+    "eg. NuGetPackageAndPublish.ps1 -version 0.1-alpha -nuget c:\temp\nuget.exe"
+    "eg. NuGetPackageAndPublish.ps1 -version 0.1-alpha -nuget c:\temp\nuget.exe -apiKey ABCD-EFG..."
     ""
 
     if (-Not $version)
     {
         ""
         "**** The version of this NuGet package is required."
-        "**** Eg. ./build.ps -version 0.1-alpha"
+        "**** Eg. ./NuGetPackageAndPublish.ps1 -version 0.1-alpha"
         ""
         ""
         throw;
@@ -186,6 +188,8 @@ cls
 ""
 "  Starting NuGet packing/publishing script -  (╯°□°）╯︵ ┻━┻"
 ""
+"  This script will look for -all- *.nuspec files in a source directory,"
+"  then 
 ""
 
 DisplayCommandLineArgs

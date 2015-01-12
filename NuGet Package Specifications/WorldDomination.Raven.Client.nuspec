@@ -31,6 +31,6 @@ This library reduces the code required to take advantage of the power found in R
         </dependencies>
     </metadata>
     <files>
-        <file src="..\Code\WorldDomination.Raven.Client\bin\Release\WorldDomination.Raven.Client.dll" target="lib\net451\WorldDomination.Raven.Client.dll" />
+        <file src="..\Code\WorldDomination.Raven.Client\bin\Release\WorldDomination.Raven.Client.dll" target="lib\net45\WorldDomination.Raven.Client.dll" />
     </files>
 </package>
