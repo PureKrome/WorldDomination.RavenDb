@@ -13,7 +13,7 @@ param (
   [string]$apiKey = "",
   [string]$source = $PSScriptRoot,
   [string]$destination = $PSScriptRoot,
-  [string]$pushSource = "http://nuget.org",
+  [string]$pushSource = "https://nuget.org",
   [string]$nuget = ""
 )
 
