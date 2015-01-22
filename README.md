@@ -20,9 +20,9 @@ TODO:  image for nuget pics, etc.
 
 ---
 #Why use this package?
-There's two scenario's why these NuGet packages exist.
-1 - Client: A simple way to make setup your RavenDb document store with fake data. (eg. Only store fake data when the data doesn't exist, etc).
-2 - Tests.Helpers: Reduce the ceremony (read: code) to create your (usually) InMemory document store specifically setup for _unit tests_. This includes a quick way to setup fake data, indexes (the test only require), etc.
+There's two scenario's why these NuGet packages exist:  
+1 - `Client`: A simple way to make setup your RavenDb document store with fake data. (eg. Only store fake data when the data doesn't exist, etc).  
+2 - `Tests.Helpers`: Reduce the ceremony (read: code) to create your (usually) InMemory document store specifically setup for _unit tests_. This includes a quick way to setup fake data, indexes (the test only require), etc.
 
 ---
 [![I'm happy to accept tips](http://img.shields.io/gittip/purekrome.svg?style=flat-square)](https://gratipay.com/PureKrome/)  
