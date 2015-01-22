@@ -5,6 +5,7 @@ using System.ComponentModel.Composition.Hosting;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Raven.Abstractions.Data;
 using Raven.Client;
 using Raven.Client.Indexes;
@@ -36,7 +37,7 @@ namespace WorldDomination.Raven.Client
             // Create our Seed Data (if provided).
             if (seedData != null)
             {
-                CreateSeedData(seedData, documentStore);
+                CreateSeedDataAsync(seedData, documentStore).Wait();
             }
 
             // Now lets check to make sure there are now errors.
@@ -150,7 +151,7 @@ namespace WorldDomination.Raven.Client
             }
         }
 
-        private static void CreateSeedData(IEnumerable<IEnumerable> seedData, IDocumentStore documentStore)
+        private static async Task CreateSeedDataAsync(IEnumerable<IEnumerable> seedData, IDocumentStore documentStore)
         {
             if (documentStore == null)
             {
@@ -162,10 +163,10 @@ namespace WorldDomination.Raven.Client
                 throw new ArgumentNullException("seedData");
             }
 
-            using (IDocumentSession documentSession = documentStore.OpenSession())
+            using (IAsyncDocumentSession asyncDocumentSession = documentStore.OpenAsyncSession())
             {
                 // First, check to make sure we don't have any data.
-                if (documentSession.Advanced.DocumentStore.DatabaseCommands.GetStatistics().CountOfDocuments > 0)
+                if (documentStore.DatabaseCommands.GetStatistics().CountOfDocuments > 0)
                 {
                     // We have documents, so nothing to worry about :)
                     return;
@@ -185,14 +186,14 @@ namespace WorldDomination.Raven.Client
                         {
                             entityName = entity.GetType().ToString();
                         }
-                        documentSession.Store(entity);
+                        await asyncDocumentSession.StoreAsync(entity);
                     }
                     Trace.TraceInformation("   --- {0} {1}", count, entityName);
                 }
                 Trace.TraceInformation("   Done!");
 
                 // Commit this transaction.
-                documentSession.SaveChanges();
+                await asyncDocumentSession.SaveChangesAsync();
 
                 // Make sure all our indexes are not stale.
                 documentStore.WaitForStaleIndexesToComplete();

@@ -177,7 +177,9 @@ namespace WorldDomination.Raven.Tests.Helpers
             // Clean up.
             if (_asyncDocumentSessions != null)
             {
-                Trace.TraceInformation("Found some Document Sessions that exist. Lets clean them up :-");
+                Trace.TraceInformation("Found {0} Document Session{1} that exist. Lets clean them up :-",
+                    _asyncDocumentSessions.Count,
+                    _asyncDocumentSessions.Count == 1 ? string.Empty : "s");
                 foreach (var key in _asyncDocumentSessions.Keys)
                 {
                     Trace.TraceInformation("    - Found Key: " + key);
