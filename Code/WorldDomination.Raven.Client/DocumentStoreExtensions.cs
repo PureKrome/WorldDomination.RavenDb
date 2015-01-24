@@ -37,7 +37,11 @@ namespace WorldDomination.Raven.Client
             // Create our Seed Data (if provided).
             if (seedData != null)
             {
-                CreateSeedDataAsync(seedData, documentStore).Wait();
+                // Gawd i hate async/await when stuck calling it in a sync context.
+                // Ref: http://stackoverflow.com/questions/14485115/synchronously-waiting-for-an-async-operation-and-why-does-wait-freeze-the-pro
+                var task = Task.Run(async () => { await CreateSeedDataAsync(seedData, documentStore); });
+                task.Wait();
+                //CreateSeedDataAsync(seedData, documentStore).Wait();
             }
 
             // Now lets check to make sure there are now errors.
