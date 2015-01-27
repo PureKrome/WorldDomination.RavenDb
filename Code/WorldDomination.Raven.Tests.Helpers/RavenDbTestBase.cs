@@ -167,6 +167,7 @@ namespace WorldDomination.Raven.Tests.Helpers
 
             if (_documentStore.WasDisposed)
             {
+                Trace.TraceWarning("!!! DocumentStore was already disposed - so .. we can't dispose of it a 2nd time. Um .. you might want to check why it was already disposed, of....");
                 return;
             }
 
