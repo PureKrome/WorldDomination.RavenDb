@@ -39,9 +39,10 @@ namespace WorldDomination.Raven.Client
             {
                 // Gawd i hate async/await when stuck calling it in a sync context.
                 // Ref: http://stackoverflow.com/questions/14485115/synchronously-waiting-for-an-async-operation-and-why-does-wait-freeze-the-pro
-                var task = Task.Run(async () => { await CreateSeedDataAsync(seedData, documentStore); });
-                task.Wait();
-                //CreateSeedDataAsync(seedData, documentStore).Wait();
+                //var task = Task.Run(async () => { await CreateSeedDataAsync(seedData, documentStore); });
+                //task.Wait();
+                
+                CreateSeedData(seedData, documentStore);
             }
 
             // Now lets check to make sure there are now errors.
@@ -152,6 +153,57 @@ namespace WorldDomination.Raven.Client
             {
                 Thread.Sleep(50);
                 Trace.TraceInformation("Waiting for indexes to stop being stale ...");
+            }
+        }
+
+        private static void CreateSeedData(IEnumerable<IEnumerable> seedData, IDocumentStore documentStore)
+        {
+            if (documentStore == null)
+            {
+                throw new ArgumentNullException("documentStore");
+            }
+
+            if (seedData == null)
+            {
+                throw new ArgumentNullException("seedData");
+            }
+
+            using (IDocumentSession documentSession = documentStore.OpenSession())
+            {
+                // First, check to make sure we don't have any data.
+                if (documentStore.DatabaseCommands.GetStatistics().CountOfDocuments > 0)
+                {
+                    // We have documents, so nothing to worry about :)
+                    return;
+                }
+
+                // Store each collection of fake seeded data.
+                Trace.TraceInformation("Seeding Data :-");
+                foreach (IEnumerable collection in seedData)
+                {
+                    var count = 0;
+                    var entityName = "Unknown";
+
+                    foreach (object entity in collection)
+                    {
+                        count++;
+                        // Note: All the entities for the collection should be the same.
+                        // So lets just grab the name of the first entity.
+                        if (count <= 1)
+                        {
+                            entityName = entity.GetType().ToString();
+                        }
+                        documentSession.Store(entity);
+                    }
+                    Trace.TraceInformation("   --- {0} {1}", count, entityName);
+                }
+                Trace.TraceInformation("   Done!");
+
+                // Commit this transaction.
+                documentSession.SaveChanges();
+
+                // Make sure all our indexes are not stale.
+                documentStore.WaitForStaleIndexesToComplete();
             }
         }
 
