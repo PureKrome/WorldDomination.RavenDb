@@ -98,8 +98,8 @@ namespace WorldDomination.Raven.Client.Tests
                 // Arrange.
                 DataToBeSeeded = User.CreateFakeData().ToList();
                 var user = new User {Name = "Oren Eini", Tags = new[] {"RavenDb", "Hibernating Rhino's"}};
-                IAsyncDocumentSession documentSession = AsyncDocumentSession;
-                IAsyncDocumentSession documentSession2 = AsyncDocumentSessions("AnotherSession");
+                var documentSession = AsyncDocumentSession;
+                var documentSession2 = AsyncDocumentSessions("AnotherSession");
 
                 // Act.
                 await documentSession.StoreAsync(user);
@@ -150,7 +150,8 @@ namespace WorldDomination.Raven.Client.Tests
             public void GivenADocumentStoreUrlAfterTheDocumentStoreWasCreated_InitializeWithDefaults_ThrowsAnException()
             {
                 // Arrange.
-                IAsyncDocumentSession documentSession = AsyncDocumentSession;
+                // NOTE: this creates the Document Store instance.
+                var documentSession = AsyncDocumentSession;
 
                 // Act and Assert.
                 var result = Assert.Throws<InvalidOperationException>(

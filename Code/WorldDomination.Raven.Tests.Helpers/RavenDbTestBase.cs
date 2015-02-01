@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using Raven.Client;
 using Raven.Client.Document;
 using Raven.Client.Embedded;
@@ -12,8 +13,8 @@ namespace WorldDomination.Raven.Tests.Helpers
 {
     public abstract class RavenDbTestBase : IDisposable
     {
-        private IDocumentStore _documentStore;
-        private readonly object _documentStoreLock = new object();
+        private readonly Lazy<IDocumentStore> _documentStore;
+        private bool _hasDocumentStoreBeenCreated = false;
         private const string DefaultSessionKey = "DefaultSession";
         private IDictionary<string, IAsyncDocumentSession> _asyncDocumentSessions;
         private IList<IEnumerable> _dataToBeSeeded;
@@ -23,6 +24,12 @@ namespace WorldDomination.Raven.Tests.Helpers
         protected RavenDbTestBase()
         {
             AlwaysWaitForNonStaleResultsAsOfLastWrite = true;
+
+            _documentStore = new Lazy<IDocumentStore>(() =>
+            {
+                var documentStore = CreateDocumentStoreAsync().Result;
+                return documentStore;
+            });
         }
 
         /// <summary>
@@ -41,6 +48,9 @@ namespace WorldDomination.Raven.Tests.Helpers
             }
             set
             {
+                // NOTE: why bother with this check? Because if the developer creates a document store and THEN
+                //       tries to set this property, then the data will -not- be used. It's only used when the
+                //       document store (in this library) is -first- created.
                 EnsureDocumentStoreHasNotBeenInitialized("DataToBeSeeded");
                 _dataToBeSeeded = value;
             }
@@ -76,7 +86,7 @@ namespace WorldDomination.Raven.Tests.Helpers
             get { return _existingDocumentStoreSettings; }
             set
             {
-                if (_documentStore != null)
+                if (DocumentStore != null)
                 {
                     throw new InvalidOperationException(
                         "The DocumentStore has already been created and Initialized. As such, the ExistingDocumentStoreSettings instance cannot be used. Therefore, set this value BEFORE your first call to a AsyncDocumentSession (which in effect creates the DocumentStore pointing to your desired location).");
@@ -98,20 +108,7 @@ namespace WorldDomination.Raven.Tests.Helpers
         /// </summary>
         protected IDocumentStore DocumentStore
         {
-            get
-            {
-                if (_documentStore == null)
-                {
-                    lock (_documentStoreLock)
-                    {
-                        if (_documentStore == null)
-                        {
-                            _documentStore = CreateDocumentStore();
-                        }
-                    }
-                }
-                return _documentStore;
-            }
+            get { return _documentStore.Value; }
         }
 
         /// <summary>
@@ -159,13 +156,13 @@ namespace WorldDomination.Raven.Tests.Helpers
             //       AS SUCH, the document store might not have been created correcfly.
             //       SO - please do NOT reference the property .. but the backing private member.
 
-            if (_documentStore == null)
+            if (DocumentStore == null)
             {
                 Trace.TraceInformation(" .... No RavenDb DocumentStore created - nothing to dispose of.");
                 return;
             }
 
-            if (_documentStore.WasDisposed)
+            if (DocumentStore.WasDisposed)
             {
                 Trace.TraceWarning("!!! DocumentStore was already disposed - so .. we can't dispose of it a 2nd time. Um .. you might want to check why it was already disposed, of....");
                 return;
@@ -173,7 +170,7 @@ namespace WorldDomination.Raven.Tests.Helpers
 
             // Assert for any errors.
             Trace.TraceInformation("Asserting for any DocumentStore errors.");
-            _documentStore.AssertDocumentStoreErrors();
+            DocumentStore.AssertDocumentStoreErrors();
 
             // Clean up.
             if (_asyncDocumentSessions != null)
@@ -190,13 +187,13 @@ namespace WorldDomination.Raven.Tests.Helpers
             }
 
             Trace.TraceInformation("Disposing the Document Store ... ");
-            _documentStore.Dispose();
+            DocumentStore.Dispose();
             Trace.TraceInformation("Done!");
         }
 
         #endregion
 
-        private IDocumentStore CreateDocumentStore()
+        private async Task<IDocumentStore> CreateDocumentStoreAsync()
         {
             
             IDocumentStore documentStore;
@@ -241,7 +238,7 @@ namespace WorldDomination.Raven.Tests.Helpers
             }
 
             Trace.TraceInformation("Initializing data with Defaults :-");
-            documentStore.InitializeWithDefaults(DataToBeSeeded, IndexesToExecute);
+            await documentStore.InitializeWithDefaultsAsync(DataToBeSeeded, IndexesToExecute);
             Trace.TraceInformation("   Done!");
 
             // Force query's to wait for index's to catch up. Unit Testing only :P
@@ -255,6 +252,7 @@ namespace WorldDomination.Raven.Tests.Helpers
             Trace.TraceInformation("    ** Number of Indexes: " +
                                    documentStore.DatabaseCommands.GetStatistics().CountOfIndexes);
 
+            _hasDocumentStoreBeenCreated = true;
             return documentStore;
         }
 
@@ -265,7 +263,7 @@ namespace WorldDomination.Raven.Tests.Helpers
                 throw new ArgumentNullException("listName");
             }
 
-            if (_documentStore != null)
+            if (_hasDocumentStoreBeenCreated)
             {
                 var errorMessage =
                     string.Format(

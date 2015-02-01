@@ -22,13 +22,13 @@ namespace WorldDomination.Raven.Client
         /// <param name="indexesToExecute">Optional: Any index(es) which should be executed during initialization. They need to be assignable from an AbstractIndexCreationTask.</param>
         /// <param name="assembliesToScanForIndexes">Optional: The assembly where the index(es) are located.</param>
         /// <param name="areDocumentStoreErrorsTreatedAsWarnings">Optional: If there are any server errors, do we downgrade them as warnings or keep them as errors, which stops further processing of the document store.</param>
-        public static void InitializeWithDefaults(this IDocumentStore documentStore,
+        public static async Task InitializeWithDefaultsAsync(this IDocumentStore documentStore,
             IEnumerable<IEnumerable> seedData = null,
             ICollection<Type> indexesToExecute = null,
             ICollection<Type> assembliesToScanForIndexes = null,
             bool areDocumentStoreErrorsTreatedAsWarnings = false)
         {
-            // Default initializtion;
+            // Default initialization;
             documentStore.Initialize();
 
             // Static indexes or ResultTransformers.
@@ -37,12 +37,7 @@ namespace WorldDomination.Raven.Client
             // Create our Seed Data (if provided).
             if (seedData != null)
             {
-                // Gawd i hate async/await when stuck calling it in a sync context.
-                // Ref: http://stackoverflow.com/questions/14485115/synchronously-waiting-for-an-async-operation-and-why-does-wait-freeze-the-pro
-                //var task = Task.Run(async () => { await CreateSeedDataAsync(seedData, documentStore); });
-                //task.Wait();
-                
-                CreateSeedData(seedData, documentStore);
+                await CreateSeedDataAsync(seedData, documentStore);
             }
 
             // Now lets check to make sure there are now errors.
@@ -219,7 +214,7 @@ namespace WorldDomination.Raven.Client
                 throw new ArgumentNullException("seedData");
             }
 
-            using (IAsyncDocumentSession asyncDocumentSession = documentStore.OpenAsyncSession())
+            using (var asyncDocumentSession = documentStore.OpenAsyncSession())
             {
                 // First, check to make sure we don't have any data.
                 if (documentStore.DatabaseCommands.GetStatistics().CountOfDocuments > 0)
@@ -230,12 +225,12 @@ namespace WorldDomination.Raven.Client
 
                 // Store each collection of fake seeded data.
                 Trace.TraceInformation("Seeding Data :-");
-                foreach (IEnumerable collection in seedData)
+                foreach (var collection in seedData)
                 {
                     var count = 0;
                     var entityName = "Unknown";
 
-                    foreach (object entity in collection)
+                    foreach (var entity in collection)
                     {
                         count++;
                         if (count <= 1)
