@@ -27,7 +27,7 @@ namespace WorldDomination.Raven.Tests.Helpers
 
             _documentStore = new Lazy<IDocumentStore>(() =>
             {
-                var documentStore = CreateDocumentStoreAsync().Result;
+                var documentStore = CreateDocumentStoreAsync().GetAwaiter().GetResult();
                 return documentStore;
             });
         }
