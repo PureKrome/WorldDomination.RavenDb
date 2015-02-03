@@ -13,8 +13,8 @@ namespace WorldDomination.Raven.Tests.Helpers
 {
     public abstract class RavenDbTestBase : IDisposable
     {
-        private readonly Lazy<IDocumentStore> _documentStore;
-        private bool _hasDocumentStoreBeenCreated = false;
+        //private readonly AsyncLazy<IDocumentStore> _documentStore;
+        //private bool _hasDocumentStoreBeenCreated = false;
         private const string DefaultSessionKey = "DefaultSession";
         private IDictionary<string, IAsyncDocumentSession> _asyncDocumentSessions;
         private IList<IEnumerable> _dataToBeSeeded;
@@ -24,12 +24,6 @@ namespace WorldDomination.Raven.Tests.Helpers
         protected RavenDbTestBase()
         {
             AlwaysWaitForNonStaleResultsAsOfLastWrite = true;
-
-            _documentStore = new Lazy<IDocumentStore>(() =>
-            {
-                var documentStore = CreateDocumentStoreAsync().GetAwaiter().GetResult();
-                return documentStore;
-            });
         }
 
         /// <summary>
@@ -106,10 +100,7 @@ namespace WorldDomination.Raven.Tests.Helpers
         /// <summary>
         /// The main Document Store where all your lovely data will live and smile.
         /// </summary>
-        protected IDocumentStore DocumentStore
-        {
-            get { return _documentStore.Value; }
-        }
+        protected IDocumentStore DocumentStore { get; private set; }
 
         /// <summary>
         ///     The 'default' Raven async document session.
@@ -126,6 +117,8 @@ namespace WorldDomination.Raven.Tests.Helpers
         /// <returns>The RavenDb async document session.</returns>
         protected IAsyncDocumentSession AsyncDocumentSessions(string key)
         {
+            EnsureDocumentStoreHasBeenInitialized();
+
             if (_asyncDocumentSessions == null)
             {
                 Trace.TraceInformation("Creating a new async Document Session dictionary to hold all our sessions.");
@@ -136,6 +129,7 @@ namespace WorldDomination.Raven.Tests.Helpers
             if (!_asyncDocumentSessions.ContainsKey(key))
             {
                 Trace.TraceInformation("Async Document Session Key [{0}] doesn't exist. Creating a new dictionary item.", key);
+
                 _asyncDocumentSessions.Add(key, DocumentStore.OpenAsyncSession());
             }
 
@@ -155,7 +149,6 @@ namespace WorldDomination.Raven.Tests.Helpers
             // NOTE: It's possible that an error occured while trying to create a document store.
             //       AS SUCH, the document store might not have been created correcfly.
             //       SO - please do NOT reference the property .. but the backing private member.
-
             if (DocumentStore == null)
             {
                 Trace.TraceInformation(" .... No RavenDb DocumentStore created - nothing to dispose of.");
@@ -193,9 +186,8 @@ namespace WorldDomination.Raven.Tests.Helpers
 
         #endregion
 
-        private async Task<IDocumentStore> CreateDocumentStoreAsync()
+        protected async Task CreateDocumentStoreAsync()
         {
-            
             IDocumentStore documentStore;
 
             if (ExistingDocumentStoreSettings == null ||
@@ -252,8 +244,18 @@ namespace WorldDomination.Raven.Tests.Helpers
             Trace.TraceInformation("    ** Number of Indexes: " +
                                    documentStore.DatabaseCommands.GetStatistics().CountOfIndexes);
 
-            _hasDocumentStoreBeenCreated = true;
-            return documentStore;
+            DocumentStore = documentStore;
+        }
+
+        private void EnsureDocumentStoreHasBeenInitialized()
+        {
+            if (DocumentStore == null)
+            {
+                var errorMessage =
+                    string.Format(
+                        "The DocumentStore has to be initialized before any operations can be processed against it.");
+                throw new InvalidOperationException(errorMessage);
+            }
         }
 
         private void EnsureDocumentStoreHasNotBeenInitialized(string listName)
@@ -263,7 +265,7 @@ namespace WorldDomination.Raven.Tests.Helpers
                 throw new ArgumentNullException("listName");
             }
 
-            if (_hasDocumentStoreBeenCreated)
+            if (DocumentStore != null)
             {
                 var errorMessage =
                     string.Format(

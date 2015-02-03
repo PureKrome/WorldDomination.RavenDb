@@ -16,12 +16,13 @@ namespace WorldDomination.Raven.Client.Tests
         public class InitializeWithDefaultsFacts : RavenDbTestBase
         {
             [Fact]
-            public void GivenNoSeedDataAndNoIndexes_InitializeWithDefaults_WorksWithNoDataAndNoIndexes()
+            public async Task GivenNoSeedDataAndNoIndexes_InitializeWithDefaults_WorksWithNoDataAndNoIndexes()
             {
                 // Arrange.
+                await CreateDocumentStoreAsync();
 
                 // Act.
-                IAsyncDocumentSession documentSession = AsyncDocumentSession;
+                var documentSession = AsyncDocumentSession;
 
                 // Assert.
                 Assert.NotNull(documentSession);
@@ -31,7 +32,7 @@ namespace WorldDomination.Raven.Client.Tests
             }
 
             [Fact]
-            public void GivenSomeSeedDataAndNoIndexes_InitializeWithDefaults_WorksWithSomeDataAndNoIndexes()
+            public async Task GivenSomeSeedDataAndNoIndexes_InitializeWithDefaults_WorksWithSomeDataAndNoIndexes()
             {
                 // Arrange.
                 DataToBeSeeded = User.CreateFakeData().ToList();
@@ -39,9 +40,10 @@ namespace WorldDomination.Raven.Client.Tests
                 int numberOfDocuments = DataToBeSeeded
                     .Cast<IList>()
                     .Sum(collection => collection.Count) + DataToBeSeeded.Count();
+                await CreateDocumentStoreAsync();
 
                 // Act.
-                IAsyncDocumentSession documentSession = AsyncDocumentSession;
+                var documentSession = AsyncDocumentSession;
 
                 // Assert.
                 Assert.NotNull(documentSession);
@@ -52,7 +54,7 @@ namespace WorldDomination.Raven.Client.Tests
             }
 
             [Fact]
-            public void GivenSomeSeedDataAndTwoIndexes_InitializeWithDefaults_WorksWithSomeDataAndTwoIndexes()
+            public async Task GivenSomeSeedDataAndTwoIndexes_InitializeWithDefaults_WorksWithSomeDataAndTwoIndexes()
             {
                 // Arrange.
                 DataToBeSeeded = User.CreateFakeData().ToList();
@@ -64,9 +66,10 @@ namespace WorldDomination.Raven.Client.Tests
                     typeof (Users_Search),
                     typeof (Users_TagsSummary)
                 };
+                await CreateDocumentStoreAsync();
 
                 // Act.
-                IAsyncDocumentSession documentSession = AsyncDocumentSession;
+                var documentSession = AsyncDocumentSession;
 
                 // Assert.
                 Assert.NotNull(documentSession);
@@ -98,6 +101,8 @@ namespace WorldDomination.Raven.Client.Tests
                 // Arrange.
                 DataToBeSeeded = User.CreateFakeData().ToList();
                 var user = new User {Name = "Oren Eini", Tags = new[] {"RavenDb", "Hibernating Rhino's"}};
+                await CreateDocumentStoreAsync();
+
                 var documentSession = AsyncDocumentSession;
                 var documentSession2 = AsyncDocumentSessions("AnotherSession");
 
@@ -115,11 +120,11 @@ namespace WorldDomination.Raven.Client.Tests
             }
 
             [Fact]
-            public void GivenSomeIndexToExecuteAfterTheDocumentStoreWasCreated_InitializeWithDefaults_ThrowsAnException()
+            public async Task GivenSomeIndexToExecuteAfterTheDocumentStoreWasCreated_InitializeWithDefaults_ThrowsAnException()
             {
                 // Arrange.
-                IAsyncDocumentSession documentSession = AsyncDocumentSession;
-
+                await CreateDocumentStoreAsync();
+                
                 // Act and Assert.
                 var result = Assert.Throws<InvalidOperationException>(() =>
                     IndexesToExecute =
@@ -131,10 +136,10 @@ namespace WorldDomination.Raven.Client.Tests
             }
 
             [Fact]
-            public void GivenSomeSeedDataAfterTheDocumentStoreWasCreated_InitializeWithDefaults_ThrowsAnException()
+            public async Task GivenSomeSeedDataAfterTheDocumentStoreWasCreated_InitializeWithDefaults_ThrowsAnException()
             {
                 // Arrange.
-                IAsyncDocumentSession documentSession = AsyncDocumentSession;
+                await CreateDocumentStoreAsync();
 
                 // Act and Assert.
                 var result = Assert.Throws<InvalidOperationException>(() =>
@@ -147,11 +152,10 @@ namespace WorldDomination.Raven.Client.Tests
             }
 
             [Fact]
-            public void GivenADocumentStoreUrlAfterTheDocumentStoreWasCreated_InitializeWithDefaults_ThrowsAnException()
+            public async Task GivenADocumentStoreUrlAfterTheDocumentStoreWasCreated_InitializeWithDefaults_ThrowsAnException()
             {
                 // Arrange.
-                // NOTE: this creates the Document Store instance.
-                var documentSession = AsyncDocumentSession;
+                await CreateDocumentStoreAsync();
 
                 // Act and Assert.
                 var result = Assert.Throws<InvalidOperationException>(
@@ -163,7 +167,7 @@ namespace WorldDomination.Raven.Client.Tests
             }
 
             [Fact]
-            public void GivenADocumentConvention_InitializeWithDefaults_Works()
+            public async Task GivenADocumentConvention_InitializeWithDefaults_Works()
             {
                 // Arrange.
                 DocumentConvention = new DocumentConvention
@@ -171,8 +175,10 @@ namespace WorldDomination.Raven.Client.Tests
                     // Will get overriden.
                     DefaultQueryingConsistency = ConsistencyOptions.None
                 };
+                await CreateDocumentStoreAsync();
+
                 // Act.
-                IAsyncDocumentSession documentSession = AsyncDocumentSession;
+                var documentSession = AsyncDocumentSession;
 
                 // Assert.
                 Assert.NotNull(documentSession);
@@ -183,7 +189,7 @@ namespace WorldDomination.Raven.Client.Tests
             }
 
             [Fact]
-            public void GivenSomeSeedDataAndNoIndexesButOneResultTransformer_InitializeWithDefaults_WorksWithSomeDataAndNoIndexes()
+            public async Task GivenSomeSeedDataAndNoIndexesButOneResultTransformer_InitializeWithDefaults_WorksWithSomeDataAndNoIndexes()
             {
                 // Arrange.
                 DataToBeSeeded = User.CreateFakeData().ToList();
@@ -191,14 +197,16 @@ namespace WorldDomination.Raven.Client.Tests
                 int numberOfDocuments = DataToBeSeeded
                     .Cast<IList>()
                     .Sum(collection => collection.Count) + DataToBeSeeded.Count();
-
+                
                 IndexesToExecute = new List<Type>
                 {
                     typeof (User_SearchTransformer)
                 };
+                
+                await CreateDocumentStoreAsync();
 
                 // Act.
-                IAsyncDocumentSession documentSession = AsyncDocumentSession;
+                var documentSession = AsyncDocumentSession;
 
                 new User_SearchTransformer().Execute(DocumentStore);
 
