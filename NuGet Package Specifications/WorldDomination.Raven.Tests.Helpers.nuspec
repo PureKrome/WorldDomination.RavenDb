@@ -29,7 +29,7 @@ By inheriting from the RaveDbTestBase class, most of this verbose code is now do
         <language>en-au</language>
         <tags>raven ravendb unit-tests unittests tests magical unicorn magicalunicorn worldomination worlddomination world-domination</tags>
         <dependencies>
-            <dependency id="WorldDomination.Raven.Client" version="[2.0.0, 3.0.0)" />
+            <dependency id="WorldDomination.Raven.Client" version="[2.1.0, 3.0.0)" />
         </dependencies>
     </metadata>
     <files>
