@@ -13,9 +13,9 @@ namespace WorldDomination.Raven.Tests.Helpers
 {
     public abstract class RavenDbTestBase : IDisposable
     {
-        //private readonly AsyncLazy<IDocumentStore> _documentStore;
         //private bool _hasDocumentStoreBeenCreated = false;
         private const string DefaultSessionKey = "DefaultSession";
+        private readonly Lazy<IDocumentStore> _documentStore;
         private IDictionary<string, IAsyncDocumentSession> _asyncDocumentSessions;
         private IList<IEnumerable> _dataToBeSeeded;
         private ExistingDocumentStoreSettings _existingDocumentStoreSettings;
@@ -24,6 +24,12 @@ namespace WorldDomination.Raven.Tests.Helpers
         protected RavenDbTestBase()
         {
             AlwaysWaitForNonStaleResultsAsOfLastWrite = true;
+
+            _documentStore = new Lazy<IDocumentStore>(() =>
+            {
+                var ds = CreateDocumentStoreAsync().ConfigureAwait(false);
+                return ds.GetAwaiter().GetResult();
+            });
         }
 
         /// <summary>
@@ -58,10 +64,10 @@ namespace WorldDomination.Raven.Tests.Helpers
             get
             {
                 Trace.TraceInformation("* {0} index(es)/result transformer(s) have been requested to be executed.",
-                    _indexesToExecute == null 
-                    ? 0 
-                    : _indexesToExecute.Count);
-                                       
+                    _indexesToExecute == null
+                        ? 0
+                        : _indexesToExecute.Count);
+
                 return _indexesToExecute;
             }
             set
@@ -95,12 +101,18 @@ namespace WorldDomination.Raven.Tests.Helpers
         /// </summary>
         protected DocumentConvention DocumentConvention { get; set; }
 
+        /// <summary>
+        /// Block/Wait for the database to finish indexing any new data that was inserted.
+        /// </summary>
         protected bool AlwaysWaitForNonStaleResultsAsOfLastWrite { get; set; }
 
         /// <summary>
         /// The main Document Store where all your lovely data will live and smile.
         /// </summary>
-        protected IDocumentStore DocumentStore { get; private set; }
+        protected IDocumentStore DocumentStore
+        {
+            get { return _documentStore.Value; }
+        }
 
         /// <summary>
         ///     The 'default' Raven async document session.
@@ -108,32 +120,6 @@ namespace WorldDomination.Raven.Tests.Helpers
         protected IAsyncDocumentSession AsyncDocumentSession
         {
             get { return AsyncDocumentSessions(DefaultSessionKey); }
-        }
-
-        /// <summary>
-        ///     A named Raven async document session.
-        /// </summary>
-        /// <param name="key">The key name of an async document session.</param>
-        /// <returns>The RavenDb async document session.</returns>
-        protected IAsyncDocumentSession AsyncDocumentSessions(string key)
-        {
-            EnsureDocumentStoreHasBeenInitialized();
-
-            if (_asyncDocumentSessions == null)
-            {
-                Trace.TraceInformation("Creating a new async Document Session dictionary to hold all our sessions.");
-                _asyncDocumentSessions = new Dictionary<string, IAsyncDocumentSession>();
-            }
-
-            // Do we have the key?
-            if (!_asyncDocumentSessions.ContainsKey(key))
-            {
-                Trace.TraceInformation("Async Document Session Key [{0}] doesn't exist. Creating a new dictionary item.", key);
-
-                _asyncDocumentSessions.Add(key, DocumentStore.OpenAsyncSession());
-            }
-
-            return _asyncDocumentSessions[key];
         }
 
         #region IDisposable Members
@@ -157,7 +143,8 @@ namespace WorldDomination.Raven.Tests.Helpers
 
             if (DocumentStore.WasDisposed)
             {
-                Trace.TraceWarning("!!! DocumentStore was already disposed - so .. we can't dispose of it a 2nd time. Um .. you might want to check why it was already disposed, of....");
+                Trace.TraceWarning(
+                    "!!! DocumentStore was already disposed - so .. we can't dispose of it a 2nd time. Um .. you might want to check why it was already disposed, of....");
                 return;
             }
 
@@ -186,7 +173,34 @@ namespace WorldDomination.Raven.Tests.Helpers
 
         #endregion
 
-        protected async Task CreateDocumentStoreAsync()
+        /// <summary>
+        ///     A named Raven async document session.
+        /// </summary>
+        /// <param name="key">The key name of an async document session.</param>
+        /// <returns>The RavenDb async document session.</returns>
+        protected IAsyncDocumentSession AsyncDocumentSessions(string key)
+        {
+            EnsureDocumentStoreHasBeenInitialized();
+
+            if (_asyncDocumentSessions == null)
+            {
+                Trace.TraceInformation("Creating a new async Document Session dictionary to hold all our sessions.");
+                _asyncDocumentSessions = new Dictionary<string, IAsyncDocumentSession>();
+            }
+
+            // Do we have the key?
+            if (!_asyncDocumentSessions.ContainsKey(key))
+            {
+                Trace.TraceInformation(
+                    "Async Document Session Key [{0}] doesn't exist. Creating a new dictionary item.", key);
+
+                _asyncDocumentSessions.Add(key, DocumentStore.OpenAsyncSession());
+            }
+
+            return _asyncDocumentSessions[key];
+        }
+
+        private async Task<IDocumentStore> CreateDocumentStoreAsync()
         {
             IDocumentStore documentStore;
 
@@ -221,7 +235,8 @@ namespace WorldDomination.Raven.Tests.Helpers
             {
                 Trace.TraceInformation(
                     "Setting DocumentStore Conventions: ConsistencyOptions.AlwaysWaitForNonStaleResultsAsOfLastWrite. This means that the unit test will *always* wait for the index to complete before querying against it.");
-                documentStore.Conventions.DefaultQueryingConsistency = ConsistencyOptions.AlwaysWaitForNonStaleResultsAsOfLastWrite;
+                documentStore.Conventions.DefaultQueryingConsistency =
+                    ConsistencyOptions.AlwaysWaitForNonStaleResultsAsOfLastWrite;
             }
             else
             {
@@ -244,7 +259,7 @@ namespace WorldDomination.Raven.Tests.Helpers
             Trace.TraceInformation("    ** Number of Indexes: " +
                                    documentStore.DatabaseCommands.GetStatistics().CountOfIndexes);
 
-            DocumentStore = documentStore;
+            return documentStore;
         }
 
         private void EnsureDocumentStoreHasBeenInitialized()
@@ -265,7 +280,8 @@ namespace WorldDomination.Raven.Tests.Helpers
                 throw new ArgumentNullException("listName");
             }
 
-            if (DocumentStore != null)
+            if (_documentStore != null &&
+                _documentStore.IsValueCreated)
             {
                 var errorMessage =
                     string.Format(

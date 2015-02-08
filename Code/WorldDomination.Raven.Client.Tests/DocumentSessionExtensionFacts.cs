@@ -16,11 +16,10 @@ namespace WorldDomination.Raven.Client.Tests
         public class InitializeWithDefaultsFacts : RavenDbTestBase
         {
             [Fact]
-            public async Task GivenNoSeedDataAndNoIndexes_InitializeWithDefaults_WorksWithNoDataAndNoIndexes()
+            public void GivenNoSeedDataAndNoIndexes_InitializeWithDefaults_WorksWithNoDataAndNoIndexes()
             {
                 // Arrange.
-                await CreateDocumentStoreAsync();
-
+                
                 // Act.
                 var documentSession = AsyncDocumentSession;
 
@@ -32,15 +31,14 @@ namespace WorldDomination.Raven.Client.Tests
             }
 
             [Fact]
-            public async Task GivenSomeSeedDataAndNoIndexes_InitializeWithDefaults_WorksWithSomeDataAndNoIndexes()
+            public void GivenSomeSeedDataAndNoIndexes_InitializeWithDefaults_WorksWithSomeDataAndNoIndexes()
             {
                 // Arrange.
                 DataToBeSeeded = User.CreateFakeData().ToList();
                 // NOTE: Each collection has an identity counter (it is assumed).
-                int numberOfDocuments = DataToBeSeeded
+                var numberOfDocuments = DataToBeSeeded
                     .Cast<IList>()
                     .Sum(collection => collection.Count) + DataToBeSeeded.Count();
-                await CreateDocumentStoreAsync();
 
                 // Act.
                 var documentSession = AsyncDocumentSession;
@@ -54,19 +52,18 @@ namespace WorldDomination.Raven.Client.Tests
             }
 
             [Fact]
-            public async Task GivenSomeSeedDataAndTwoIndexes_InitializeWithDefaults_WorksWithSomeDataAndTwoIndexes()
+            public void GivenSomeSeedDataAndTwoIndexes_InitializeWithDefaults_WorksWithSomeDataAndTwoIndexes()
             {
                 // Arrange.
                 DataToBeSeeded = User.CreateFakeData().ToList();
                 // NOTE: Each collection has an identity counter (it is assumed).
-                int numberOfDocuments = DataToBeSeeded.Cast<IList>().Sum(collection => collection.Count) +
+                var numberOfDocuments = DataToBeSeeded.Cast<IList>().Sum(collection => collection.Count) +
                                         DataToBeSeeded.Count();
                 IndexesToExecute = new List<Type>
                 {
                     typeof (Users_Search),
                     typeof (Users_TagsSummary)
                 };
-                await CreateDocumentStoreAsync();
 
                 // Act.
                 var documentSession = AsyncDocumentSession;
@@ -101,7 +98,6 @@ namespace WorldDomination.Raven.Client.Tests
                 // Arrange.
                 DataToBeSeeded = User.CreateFakeData().ToList();
                 var user = new User {Name = "Oren Eini", Tags = new[] {"RavenDb", "Hibernating Rhino's"}};
-                await CreateDocumentStoreAsync();
 
                 var documentSession = AsyncDocumentSession;
                 var documentSession2 = AsyncDocumentSessions("AnotherSession");
@@ -120,12 +116,12 @@ namespace WorldDomination.Raven.Client.Tests
             }
 
             [Fact]
-            public async Task GivenSomeIndexToExecuteAfterTheDocumentStoreWasCreated_InitializeWithDefaults_ThrowsAnException()
+            public void GivenSomeIndexToExecuteAfterTheDocumentStoreWasCreated_InitializeWithDefaults_ThrowsAnException()
             {
                 // Arrange.
-                await CreateDocumentStoreAsync();
                 
                 // Act and Assert.
+                var session = AsyncDocumentSession;
                 var result = Assert.Throws<InvalidOperationException>(() =>
                     IndexesToExecute =
                         new List<Type> {typeof (Users_Search)});
@@ -136,12 +132,12 @@ namespace WorldDomination.Raven.Client.Tests
             }
 
             [Fact]
-            public async Task GivenSomeSeedDataAfterTheDocumentStoreWasCreated_InitializeWithDefaults_ThrowsAnException()
+            public void GivenSomeSeedDataAfterTheDocumentStoreWasCreated_InitializeWithDefaults_ThrowsAnException()
             {
                 // Arrange.
-                await CreateDocumentStoreAsync();
 
                 // Act and Assert.
+                var session = AsyncDocumentSession;
                 var result = Assert.Throws<InvalidOperationException>(() =>
                     DataToBeSeeded =
                         new List<IEnumerable> {User.CreateFakeData()});
@@ -152,10 +148,9 @@ namespace WorldDomination.Raven.Client.Tests
             }
 
             [Fact]
-            public async Task GivenADocumentStoreUrlAfterTheDocumentStoreWasCreated_InitializeWithDefaults_ThrowsAnException()
+            public void GivenADocumentStoreUrlAfterTheDocumentStoreWasCreated_InitializeWithDefaults_ThrowsAnException()
             {
                 // Arrange.
-                await CreateDocumentStoreAsync();
 
                 // Act and Assert.
                 var result = Assert.Throws<InvalidOperationException>(
@@ -167,7 +162,7 @@ namespace WorldDomination.Raven.Client.Tests
             }
 
             [Fact]
-            public async Task GivenADocumentConvention_InitializeWithDefaults_Works()
+            public void GivenADocumentConvention_InitializeWithDefaults_Works()
             {
                 // Arrange.
                 DocumentConvention = new DocumentConvention
@@ -175,7 +170,6 @@ namespace WorldDomination.Raven.Client.Tests
                     // Will get overriden.
                     DefaultQueryingConsistency = ConsistencyOptions.None
                 };
-                await CreateDocumentStoreAsync();
 
                 // Act.
                 var documentSession = AsyncDocumentSession;
@@ -202,8 +196,6 @@ namespace WorldDomination.Raven.Client.Tests
                 {
                     typeof (User_SearchTransformer)
                 };
-                
-                await CreateDocumentStoreAsync();
 
                 // Act.
                 var documentSession = AsyncDocumentSession;

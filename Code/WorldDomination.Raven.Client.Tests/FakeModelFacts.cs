@@ -22,7 +22,6 @@ namespace WorldDomination.Raven.Client.Tests
             };
 
             DataToBeSeeded = new List<IEnumerable> {new[] {fakeModel1}};
-            await CreateDocumentStoreAsync();
 
             // Now fake data to store -after- the default data is store
             await AsyncDocumentSession.StoreAsync(new FakeModel
